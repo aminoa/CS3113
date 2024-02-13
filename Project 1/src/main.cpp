@@ -79,7 +79,7 @@ SDL_Joystick* g_player_one_controller;
 glm::vec3 g_object1_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_object1_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
-glm::vec3 g_object2_position = glm::vec3(2.0f, 0.0f, 0.0f);
+glm::vec3 g_object2_position = glm::vec3(-1.0f, 0.0f, 0.0f);
 glm::vec3 g_object2_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 float get_screen_to_ortho(float coordinate, Coordinate axis)
@@ -173,14 +173,19 @@ void update()
     float delta_time = ticks - g_previous_ticks; // the delta time is the difference from the last frame
     g_previous_ticks = ticks;
 
-    g_object1_position += g_object1_movement * delta_time * 1.0f;
-    g_object2_position += g_object2_movement * delta_time * 1.0f;
+    //g_object1_position += g_object1_movement * delta_time * 1.0f;
+    //g_object2_position += g_object2_movement * delta_time * 1.0f;
+    g_object1_position.x += 1.0f * delta_time;
+    g_object2_position.x += 1.0f * delta_time;
 
     g_object1_model_matrix = glm::mat4(1.0f);
-    g_object1_model_matrix = glm::translate(g_object1_model_matrix, g_object1_position);
+    //g_object1_model_matrix = glm::translate(g_object1_model_matrix, g_object1_position);
+    g_object1_model_matrix = glm::translate(g_object1_model_matrix, glm::vec3(g_object1_position.x, 0.0f, 0.0f));
 
     g_object2_model_matrix = glm::mat4(1.0f);
-    g_object2_model_matrix = glm::translate(g_object2_model_matrix, g_object2_position);
+    //g_object2_model_matrix = glm::translate(g_object2_model_matrix, g_object2_position);
+    //g_object2_model_matrix = glm::translate(g_object2_model_matrix, glm::vec3(g_object2_position.x, 0.0f, 0.0f));
+    g_object2_model_matrix = glm::translate(g_object1_model_matrix, glm::vec3(-1.0f, 0.0f, 0));
 }
 
 void draw_object(glm::mat4& object_model_matrix, GLuint& object_texture_id)
