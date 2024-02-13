@@ -1,0 +1,76 @@
+﻿  Installing vcpkg dependencies to C:\Users\Aneesh\Documents\Classes\Spring 2023\Game Programming\CS3113\Project 1\vcpkg_installed\x64-windows\
+  "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\vcpkg.exe" install  --x-wait-for-lock --triplet "x64-windows" --vcpkg-root "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\vcpkg\\" "--x-manifest-root=C:\Users\Aneesh\Documents\Classes\Spring 2023\Game Programming\CS3113\Project 1\\" "--x-install-root=C:\Users\Aneesh\Documents\Classes\Spring 2023\Game Programming\CS3113\Project 1\vcpkg_installed\x64-windows\\" 
+  Fetching registry information from https://github.com/microsoft/vcpkg (HEAD)...
+  Detecting compiler hash for triplet x64-windows...
+  The following packages will be built and installed:
+    * egl-registry:x64-windows -> 2022-09-20 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\e596b6c29ad16da764aab6f2fef830a3a884f14b
+      glew:x64-windows -> 2.2.0#3 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\cfd894e57985fdb9c772bbf28a4aa261759bb6ac
+    * libogg:x64-windows -> 1.3.5#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\98e27727c32704393494d32615c25b7b16eb3067
+    * libpng:x64-windows -> 1.6.40#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\8b6d2c1150541a94c0ca5b2f060eb21eed4a40b2
+    * libvorbis:x64-windows -> 1.3.7#2 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\c4c646a26ce3e6ad63992d3e4a55cb185159b23c
+    * opengl:x64-windows -> 2022-12-04#3 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\c3ae71738f88449ebcd781cef60d9a253fa091d4
+    * opengl-registry:x64-windows -> 2022-09-29#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\367e1502c966f1df0656bdea115989650d01a781
+      sdl2:x64-windows -> 2.30.0 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\4ab64007873e4e383360819f5227ad0747c649d1
+      sdl2-image:x64-windows -> 2.6.3#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\641c3eeecdd7f109ac777e1a2792dd2b755f07fc
+      sdl2-mixer:x64-windows -> 2.8.0#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\b28cae64adf73bec946de9f037724763eb2ef1b2
+    * vcpkg-cmake:x64-windows -> 2023-05-04 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\88a7058fc7fa73a9c4c99cfcae9d79e2abf87a5a
+    * vcpkg-cmake-config:x64-windows -> 2022-02-06#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\8d54cc4f487d51b655abec5f9c9c3f86ca83311f
+    * wavpack:x64-windows -> 5.6.0#1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\d58b3734d0a42c7309216ade0432f7787fbd6ff5
+    * zlib:x64-windows -> 1.3.1 -- C:\Users\Aneesh\AppData\Local\vcpkg\registries\git-trees\3f05e04b9aededb96786a911a16193cdb711f0c9
+  Additional packages (*) will be modified to complete this operation.
+  Restored 14 package(s) from C:\Users\Aneesh\AppData\Local\vcpkg\archives in 687 ms. Use --debug to see more details.
+  Installing 1/14 vcpkg-cmake-config:x64-windows...
+  Elapsed time to handle vcpkg-cmake-config:x64-windows: 10.6 ms
+  Installing 2/14 vcpkg-cmake:x64-windows...
+  Elapsed time to handle vcpkg-cmake:x64-windows: 9.4 ms
+  Installing 3/14 egl-registry:x64-windows...
+  Elapsed time to handle egl-registry:x64-windows: 11 ms
+  Installing 4/14 opengl-registry:x64-windows...
+  Elapsed time to handle opengl-registry:x64-windows: 25.5 ms
+  Installing 5/14 opengl:x64-windows...
+  Elapsed time to handle opengl:x64-windows: 15 ms
+  Installing 6/14 glew:x64-windows...
+  Elapsed time to handle glew:x64-windows: 28.4 ms
+  Installing 7/14 sdl2:x64-windows...
+  Elapsed time to handle sdl2:x64-windows: 71.1 ms
+  Installing 8/14 zlib:x64-windows...
+  Elapsed time to handle zlib:x64-windows: 16 ms
+  Installing 9/14 libpng:x64-windows...
+  Elapsed time to handle libpng:x64-windows: 23.4 ms
+  Installing 10/14 sdl2-image:x64-windows...
+  Elapsed time to handle sdl2-image:x64-windows: 21.4 ms
+  Installing 11/14 wavpack:x64-windows...
+  Elapsed time to handle wavpack:x64-windows: 16.2 ms
+  Installing 12/14 libogg:x64-windows...
+  Elapsed time to handle libogg:x64-windows: 18.5 ms
+  Installing 13/14 libvorbis:x64-windows...
+  Elapsed time to handle libvorbis:x64-windows: 26.3 ms
+  Installing 14/14 sdl2-mixer:x64-windows...
+  Elapsed time to handle sdl2-mixer:x64-windows: 22 ms
+  Total install time: 315 ms
+  The package glew is compatible with built-in CMake targets:
+  
+      find_package(GLEW REQUIRED)
+      target_link_libraries(main PRIVATE GLEW::GLEW)
+  
+  sdl2 provides CMake targets:
+  
+      find_package(SDL2 CONFIG REQUIRED)
+      target_link_libraries(main
+          PRIVATE
+          $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+          $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+      )
+  
+  sdl2-image provides CMake targets:
+  
+      find_package(SDL2_image CONFIG REQUIRED)
+      target_link_libraries(main PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)
+  
+  sdl2-mixer provides CMake targets:
+  
+      find_package(SDL2_mixer CONFIG REQUIRED)
+      target_link_libraries(main PRIVATE $<IF:$<TARGET_EXISTS:SDL2_mixer::SDL2_mixer>,SDL2_mixer::SDL2_mixer,SDL2_mixer::SDL2_mixer-static>)
+  
+  main.cpp
+  Project 1.vcxproj -> C:\Users\Aneesh\Documents\Classes\Spring 2023\Game Programming\CS3113\x64\Debug\Project 1.exe
