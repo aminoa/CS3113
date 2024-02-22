@@ -49,7 +49,8 @@ VIEWPORT_HEIGHT = WINDOW_HEIGHT;
 
 const char  V_SHADER_PATH[] = "./src/shaders/vertex_textured.glsl",
 F_SHADER_PATH[] = "./src/shaders/fragment_textured.glsl",
-PLAYER_SPRITE_FILEPATH[] = "./assets/tux.png";
+PLAYER_SPRITE_FILEPATH[] = "./assets/tux.png",
+BALL_SPRITE_FILEPATH[] = "./assets/ball.png";   
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 const float MINIMUM_COLLISION_DISTANCE = 0.3f;
@@ -66,16 +67,21 @@ ShaderProgram g_shader_program;
 glm::mat4     g_view_matrix,
 g_model_matrix,
 g_projection_matrix,
-g_other_model_matrix;
+g_other_model_matrix,
+g_ball_model_matrix;
 
 GLuint g_player_texture_id,
-g_other_texture_id;
+g_other_texture_id,
+g_ball_texture_id;
 
 glm::vec3 g_player_position = glm::vec3(4.0f, 0.0f, 0.0f);
 glm::vec3 g_player_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 glm::vec3 g_other_position = glm::vec3(-4.0f, 0.0f, 0.0f);
 glm::vec3 g_other_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+
+glm::vec3 g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 float g_player_speed = 1.0f;
 
@@ -107,7 +113,7 @@ GLuint load_texture(const char* filepath)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    g_display_window = SDL_CreateWindow("Hello, Collisions!",
+    g_display_window = SDL_CreateWindow("Project 2",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -122,8 +128,9 @@ void initialise()
     g_shader_program.load(V_SHADER_PATH, F_SHADER_PATH);
 
     g_model_matrix = glm::mat4(1.0f);
-
     g_other_model_matrix = glm::mat4(1.0f);
+    g_ball_model_matrix = glm::mat4(1.0f);
+
     //g_other_model_matrix = glm::translate(g_other_model_matrix, glm::vec3(1.0f, 1.0f, 0.0f));
     //g_other_position += g_other_movement;
 
@@ -133,6 +140,7 @@ void initialise()
 
     g_player_texture_id = load_texture(PLAYER_SPRITE_FILEPATH);
     g_other_texture_id = load_texture(PLAYER_SPRITE_FILEPATH);
+	g_ball_texture_id = load_texture(BALL_SPRITE_FILEPATH);
 
     g_shader_program.set_projection_matrix(g_projection_matrix);
     g_shader_program.set_view_matrix(g_view_matrix);
@@ -143,7 +151,6 @@ void initialise()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
-
 
 void process_input()
 {
@@ -199,8 +206,6 @@ void process_input()
     }
 }
 
-
-// ————————————————————————— NEW STUFF ———————————————————————————— //
 bool check_collision(glm::vec3& position_a, glm::vec3& position_b)  //
 {                                                                   //
     // —————————————————  Distance Formula ———————————————————————— //
@@ -209,8 +214,6 @@ bool check_collision(glm::vec3& position_a, glm::vec3& position_b)  //
         pow(position_b[1] - position_b[1], 2)               //
     ) < MINIMUM_COLLISION_DISTANCE;                         //
 }                                                                   //
-// ———————————————————————————————————————————————————————————————— //
-
 
 void update()
 {
@@ -226,14 +229,32 @@ void update()
     g_other_position += g_other_movement * g_player_speed * delta_time;
     g_other_model_matrix = glm::translate(g_other_model_matrix, g_other_position);
 
-    // —————————————————————— NEW STUFF ——————————————————————— //
-    if (check_collision(g_player_position, g_other_position))   //
-    {                                                           //
-        std::cout << std::time(nullptr) << ": Collision.\n";    //
-    }                                                           //
-    // —————————————————————————————————————————————————————————//
-}
+    if (g_player_position.y > 3.0f)
+    {
+		g_player_position.y = 3.0f;
+	}
+    else if (g_player_position.y < -3.0f)
+    {
+		g_player_position.y = -3.0f;
+	}
 
+    if (g_other_position.y > 3.0f)
+    {
+		g_other_position.y = 3.0f;
+	}
+    else if (g_other_position.y < -3.0f)
+    {
+		g_other_position.y = -3.0f;
+	}
+        
+    //printf("Player: %f, %f\n", g_player_position.y, g_other_position.y);
+
+    // need to check collision with either paddle
+    //if (check_collision(g_player_position, g_other_position))   
+    //{                                                           //
+    //    std::cout << std::time(nullptr) << ": collision.\n";    //
+    //}                                                           //
+}
 
 void draw_object(glm::mat4& object_model_matrix, GLuint& object_texture_id)
 {
@@ -264,13 +285,13 @@ void render()
 
     draw_object(g_model_matrix, g_player_texture_id);
     draw_object(g_other_model_matrix, g_other_texture_id);
+    draw_object(g_ball_model_matrix, g_ball_texture_id);
 
     glDisableVertexAttribArray(g_shader_program.get_position_attribute());
     glDisableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
 
     SDL_GL_SwapWindow(g_display_window);
 }
-
 
 void shutdown() { SDL_Quit(); }
 
