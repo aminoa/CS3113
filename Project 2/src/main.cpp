@@ -91,6 +91,11 @@ const float RIGHT_WALL = 4.8f;
 float g_player_speed = 1.0f;
 float g_ball_speed = 2.0f;
 
+bool one_player = false;
+const Uint8* previous_key_state = SDL_GetKeyboardState(NULL);
+float input_cooldown = 0.0f;
+int wall_bounce = 1;
+
 GLuint load_texture(const char* filepath)
 {
     int width, height, number_of_components;
@@ -205,16 +210,47 @@ void process_input()
         g_other_movement.y = -3.0f;
     }
 
-    // Player 2
-    if (key_state[SDL_SCANCODE_UP])
+    if (key_state[SDL_SCANCODE_T] && input_cooldown > 0.5f)
     {
-        g_player_movement.y = 3.0f;
+        one_player = !one_player;
+        input_cooldown = 0.0f;
     }
-    else if (key_state[SDL_SCANCODE_DOWN])
+    
+    if (!one_player)
     {
-        g_player_movement.y = -3.0f;
+		if (key_state[SDL_SCANCODE_UP])
+		{
+			g_player_movement.y = 3.0f;
+		}
+		else if (key_state[SDL_SCANCODE_DOWN])
+		{
+			g_player_movement.y = -3.0f;
+		}
     }
+    else
+    {
+        // just goes up and down, reflecting off the TOP and Bottom walls
+        g_player_movement.y = 3.0f * (wall_bounce) ? 1 : -1;
+    }
+
+    float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
+    float delta_time = ticks - g_previous_ticks;
+    input_cooldown += delta_time;
 }
+ //   {
+
+ //       //if (g_ball_position.y > g_player_position.y)
+ //       if (g_player_position.y == BOTTOM_WALL + 0.1f)
+ //       {
+ //           g_player_movement.y = 3.0f;
+ //       }
+ //       //else if (g_ball_position.y < g_player_position.y)
+ //       else if (g_player_position.y < TOP_WALL - 0.1f)
+ //       {
+	//		g_player_movement.y = -3.0f;
+	//	}
+	//}
+ //   else // Player 2
 
 bool check_collision(glm::vec3& position_a, glm::vec3& position_b) 
 {                                                                   
@@ -241,10 +277,12 @@ void update()
     if (g_player_position.y > TOP_WALL)
     {
 		g_player_position.y = TOP_WALL;
+        wall_bounce = 0;    
 	}
     else if (g_player_position.y < BOTTOM_WALL)
     {
 		g_player_position.y = BOTTOM_WALL;
+        wall_bounce = 1;
 	}
 
     if (g_other_position.y > TOP_WALL)
@@ -256,15 +294,34 @@ void update()
 		g_other_position.y = BOTTOM_WALL;
 	}
 
-	// get relative position from the center of the paddle //
-    if (check_collision(g_player_position, g_ball_position) || (check_collision(g_other_position, g_ball_position))) 
+	// put offset so the ball doesn't get stuck
+    if (check_collision(g_player_position, g_ball_position))
     {                                                           
         g_ball_movement.x = -g_ball_movement.x;
+        g_ball_position.x -= 0.1f;
     }                                                          
+    else if (check_collision(g_other_position, g_ball_position))
+    {
+		g_ball_movement.x = -g_ball_movement.x;
+		g_ball_position.x += 0.1f;
+	}
 
-    if (g_ball_position.y > TOP_WALL || g_ball_position.y < BOTTOM_WALL)
+    if (g_ball_position.y > TOP_WALL)
     {
         g_ball_movement.y = -g_ball_movement.y;
+        g_ball_position.y -= 0.1f;
+	}
+    else if (g_ball_position.y < BOTTOM_WALL)
+    {
+        g_ball_movement.y = -g_ball_movement.y;
+        g_ball_position.y += 0.1f;
+    }
+
+    // check for game over (wall goes to the left or right side)
+    if (g_ball_position.x > RIGHT_WALL || g_ball_position.x < LEFT_WALL)
+    {
+        g_game_is_running = false;
+		return;
 	}
 
     g_ball_model_matrix = glm::mat4(1.0f);
