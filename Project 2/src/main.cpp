@@ -102,7 +102,7 @@ const float LEFT_WALL = -4.8f;
 const float RIGHT_WALL = 4.8f;
 
 float g_player_speed = 1.0f;
-float g_ball_speed = 2.0f;
+float g_ball_speed = 1.0f;
 
 bool one_player = false;
 const Uint8* previous_key_state = SDL_GetKeyboardState(NULL);
@@ -155,30 +155,21 @@ void initialise()
     g_model_matrix = glm::mat4(1.0f);
     g_other_model_matrix = glm::mat4(1.0f);
 
+    // init balls
     float start_angle = ((float)rand() / (RAND_MAX)) + 1;
     g_ball_model_matrix = glm::mat4(1.0f);
     g_ball_movement.x = 1.0f * start_angle;
 	g_ball_movement.y = 1.0f * start_angle;
 
-    if (number_of_balls == 2)
-    {
-		float start_angle = ((float)rand() / (RAND_MAX)) + 1;
-		g_ball2_model_matrix = glm::mat4(1.0f);
-		g_ball2_movement.x = 1.0f * start_angle;
-		g_ball2_movement.y = 1.0f * start_angle;
-    }
-    else if (number_of_balls == 3)
-    {
-		float start_angle = ((float)rand() / (RAND_MAX)) + 1;
-		g_ball2_model_matrix = glm::mat4(1.0f);
-		g_ball2_movement.x = 1.0f * start_angle;
-		g_ball2_movement.y = 1.0f * start_angle;
+	start_angle = ((float)rand() / (RAND_MAX)) + 1;
+	g_ball2_model_matrix = glm::mat4(1.0f);
+	g_ball2_movement.x = -1.0f * start_angle;
+	g_ball2_movement.y = -1.0f * start_angle;
 
-        float start_angle2 = ((float)rand() / (RAND_MAX)) + 1;
-		g_ball3_model_matrix = glm::mat4(1.0f);
-        g_ball3_movement.x = 1.0f * start_angle2;
-        g_ball3_movement.y = 1.0f * start_angle2;
-    }
+	start_angle = ((float)rand() / (RAND_MAX)) + 1;
+	g_ball3_model_matrix = glm::mat4(1.0f);
+	g_ball3_movement.x = -1.0f * start_angle;
+	g_ball3_movement.y = 1.0f * start_angle;
 
 
     //g_other_model_matrix = glm::mat4(1.0f);
@@ -297,7 +288,7 @@ bool check_collision(glm::vec3& position_a, glm::vec3& position_b)
     return sqrt(pow(position_b[0] - position_a[0], 2) + pow(position_b[1] - position_a[1], 2)) < MINIMUM_COLLISION_DISTANCE;
 }                                                                  
 
-void ball_collision(glm::vec3& ball_movement, glm::vec3& ball_position)
+void update_ball(glm::mat4& ball_model_matrix, glm::vec3& ball_movement, glm::vec3& ball_position, float delta_time)
 {
     if (ball_position.y > TOP_WALL)
     {
@@ -320,7 +311,31 @@ void ball_collision(glm::vec3& ball_movement, glm::vec3& ball_position)
 		ball_movement.x = -ball_movement.x;
 		ball_position.x += 0.1f;
 	}
+
+    // check for game over (wall goes to the left or right side)
+    if (ball_position.x > RIGHT_WALL)
+    {
+        g_game_is_running = false;
+        other_player_wins = true;
+	}
+    else if (ball_position.x < LEFT_WALL)
+    {
+		g_game_is_running = false;
+		other_player_wins = false;
+    }
+
+    ball_model_matrix = glm::mat4(1.0f);
+    ball_position += ball_movement * g_ball_speed * delta_time;
+	ball_model_matrix = glm::translate(ball_model_matrix, ball_position); 
    
+}
+
+void update_player(glm::mat4& player_model_matrix, glm::vec3& player_movement, glm::vec3& player_position, float delta_time)
+{
+	player_model_matrix = glm::mat4(1.0f);
+	player_position += player_movement * g_player_speed * delta_time;
+	player_model_matrix = glm::translate(player_model_matrix, player_position);
+
 }
 
 void update()
@@ -329,27 +344,8 @@ void update()
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
 
-    g_model_matrix = glm::mat4(1.0f);
-    g_player_position += g_player_movement * g_player_speed * delta_time;
-    g_model_matrix = glm::translate(g_model_matrix, g_player_position);
-
-    g_other_model_matrix = glm::mat4(1.0f);
-    g_other_position += g_other_movement * g_player_speed * delta_time;
-    g_other_model_matrix = glm::translate(g_other_model_matrix, g_other_position);
-
-    if (number_of_balls > 1)
-    {
-        g_ball2_model_matrix = glm::mat4(1.0f);
-        g_ball2_position += g_ball2_movement * g_ball_speed * delta_time;
-        g_ball2_model_matrix = glm::translate(g_ball2_model_matrix, g_ball2_position);
-    }
-    if (number_of_balls == 3)
-    {
-        g_ball3_model_matrix = glm::mat4(1.0f);
-        g_ball3_position += g_ball3_movement * g_ball_speed * delta_time;
-        g_ball3_model_matrix = glm::translate(g_ball3_model_matrix, g_ball3_position);
-    }
-    
+    update_player(g_model_matrix, g_player_movement, g_player_position, delta_time);
+    update_player(g_other_model_matrix, g_other_movement, g_other_position, delta_time);
 
     // Verify players can't go above or below the screen 
 
@@ -373,43 +369,10 @@ void update()
 		g_other_position.y = BOTTOM_WALL;
 	}
 
-	// put offset so the ball doesn't get stuck
- //   if (check_collision(g_player_position, g_ball_position))
- //   {                                                           
- //       g_ball_movement.x = -g_ball_movement.x;
- //       g_ball_position.x -= 0.1f;
- //   }                                                          
- //   else if (check_collision(g_other_position, g_ball_position))
- //   {
-	//	g_ball_movement.x = -g_ball_movement.x;
-	//	g_ball_position.x += 0.1f;
-	//}
+    update_ball(g_ball_model_matrix, g_ball_movement, g_ball_position, delta_time);
+    if (number_of_balls > 1) { update_ball(g_ball2_model_matrix, g_ball2_movement, g_ball2_position, delta_time); }
+    if (number_of_balls == 3) { update_ball(g_ball3_model_matrix, g_ball3_movement, g_ball3_position, delta_time); }
 
-    ball_collision(g_ball_movement, g_ball_position);
-    if (number_of_balls > 1)
-    {
-		ball_collision(g_ball2_movement, g_ball2_position);
-    }
-    if (number_of_balls == 3)
-    {
-		ball_collision(g_ball3_movement, g_ball3_position);
-    }
-
-    // check for game over (wall goes to the left or right side)
-    if (g_ball_position.x > RIGHT_WALL)
-    {
-        g_game_is_running = false;
-        other_player_wins = true;
-	}
-    else if (g_ball_position.x < LEFT_WALL)
-    {
-		g_game_is_running = false;
-		other_player_wins = false;
-    }
-
-    g_ball_model_matrix = glm::mat4(1.0f);
-    g_ball_position += g_ball_movement * g_ball_speed * delta_time;
-	g_ball_model_matrix = glm::translate(g_ball_model_matrix, g_ball_position); 
 
 }
 
@@ -449,7 +412,7 @@ void render()
     {
 		draw_object(g_ball2_model_matrix, g_ball_texture_id);
     }
-    else if (number_of_balls == 3)
+    if (number_of_balls == 3)
     {
 		draw_object(g_ball3_model_matrix, g_ball_texture_id);
     }
