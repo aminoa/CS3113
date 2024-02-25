@@ -50,7 +50,9 @@ VIEWPORT_HEIGHT = WINDOW_HEIGHT;
 const char  V_SHADER_PATH[] = "./src/shaders/vertex_textured.glsl",
 F_SHADER_PATH[] = "./src/shaders/fragment_textured.glsl",
 PLAYER_SPRITE_FILEPATH[] = "./assets/tux.png",
-BALL_SPRITE_FILEPATH[] = "./assets/ball.png";   
+BALL_SPRITE_FILEPATH[] = "./assets/ball.png",
+PLAYER_1_WIN_FILEPATH[] = "./assets/p1_win.png",
+PLAYER_2_WIN_FILEPATH[] = "./assets/p2_win.png";
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 const float MINIMUM_COLLISION_DISTANCE = 1.0f;
@@ -72,7 +74,9 @@ g_ball_model_matrix;
 
 GLuint g_player_texture_id,
 g_other_texture_id,
-g_ball_texture_id;
+g_ball_texture_id,
+g_p1_win_texture_id,
+g_p2_win_texture_id;
 
 glm::vec3 g_player_position = glm::vec3(4.0f, 0.0f, 0.0f);
 glm::vec3 g_player_movement = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -82,6 +86,13 @@ glm::vec3 g_other_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 glm::vec3 g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::vec3 g_ball_movement = glm::vec3(3.0f, 0.0f, 0.0f);
+
+// optionally add more balls
+glm::vec3 g_ball_2_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_ball_2_movement = glm::vec3(3.0f, 0.0f, 0.0f);
+
+glm::vec3 g_ball_3_position = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_ball_3_movement = glm::vec3(3.0f, 0.0f, 0.0f);
 
 const float TOP_WALL = 3.4f;
 const float BOTTOM_WALL = -3.4f;
@@ -95,6 +106,8 @@ bool one_player = false;
 const Uint8* previous_key_state = SDL_GetKeyboardState(NULL);
 float input_cooldown = 0.0f;
 int wall_bounce = 1;
+bool other_player_wins;
+int number_of_balls = 1;
 
 GLuint load_texture(const char* filepath)
 {
@@ -158,6 +171,9 @@ void initialise()
     g_other_texture_id = load_texture(PLAYER_SPRITE_FILEPATH);
 	g_ball_texture_id = load_texture(BALL_SPRITE_FILEPATH);
 
+    g_p1_win_texture_id = load_texture(PLAYER_1_WIN_FILEPATH);
+    g_p2_win_texture_id = load_texture(PLAYER_2_WIN_FILEPATH);
+
     g_shader_program.set_projection_matrix(g_projection_matrix);
     g_shader_program.set_view_matrix(g_view_matrix);
 
@@ -166,6 +182,9 @@ void initialise()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // generate endgame messages
+
 }
 
 void process_input()
@@ -318,11 +337,16 @@ void update()
     }
 
     // check for game over (wall goes to the left or right side)
-    if (g_ball_position.x > RIGHT_WALL || g_ball_position.x < LEFT_WALL)
+    if (g_ball_position.x > RIGHT_WALL)
     {
         g_game_is_running = false;
-		return;
+        other_player_wins = true;
 	}
+    else if (g_ball_position.x < LEFT_WALL)
+    {
+		g_game_is_running = false;
+		other_player_wins = false;
+    }
 
     g_ball_model_matrix = glm::mat4(1.0f);
     g_ball_position += g_ball_movement * g_ball_speed * delta_time;
@@ -367,6 +391,47 @@ void render()
     SDL_GL_SwapWindow(g_display_window);
 }
 
+void render_finish()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // adjusting this to make the collision match the texture
+    float vertices[] = {
+        -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f
+    };
+
+    float texture_coordinates[] = {
+        0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+    };
+
+    glVertexAttribPointer(g_shader_program.get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
+    glEnableVertexAttribArray(g_shader_program.get_position_attribute());
+
+    glVertexAttribPointer(g_shader_program.get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, texture_coordinates);
+    glEnableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+
+    if (other_player_wins)
+    {
+        auto scale_vector = glm::vec3(3.0f);
+        g_model_matrix = glm::scale(g_model_matrix, scale_vector);
+		draw_object(g_model_matrix, g_p2_win_texture_id);
+	}
+	else
+	{
+        auto scale_vector = glm::vec3(3.0f);
+        g_model_matrix = glm::scale(g_model_matrix, scale_vector);
+		draw_object(g_model_matrix, g_p1_win_texture_id);
+    }
+
+    glDisableVertexAttribArray(g_shader_program.get_position_attribute());
+    glDisableVertexAttribArray(g_shader_program.get_tex_coordinate_attribute());
+
+    SDL_GL_SwapWindow(g_display_window);
+
+}
+
 void shutdown() { SDL_Quit(); }
 
 int main(int argc, char* argv[])
@@ -380,6 +445,12 @@ int main(int argc, char* argv[])
         render();
     }
 
-    shutdown();
+	render_finish();
+
+    //wait 10 seconds
+    SDL_Delay(10000);
+
+
+    //shutdown();
     return 0;
 }
