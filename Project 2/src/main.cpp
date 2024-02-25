@@ -37,9 +37,9 @@
 const int WINDOW_WIDTH = 640,
 WINDOW_HEIGHT = 480;
 
-const float BG_RED = 0.1922f,
-BG_BLUE = 0.549f,
-BG_GREEN = 0.9059f,
+const float BG_RED = 0.0f,
+BG_BLUE = 0.0f,
+BG_GREEN = 0.0f,
 BG_OPACITY = 1.0f;
 
 const int VIEWPORT_X = 0,
@@ -53,7 +53,7 @@ PLAYER_SPRITE_FILEPATH[] = "./assets/tux.png",
 BALL_SPRITE_FILEPATH[] = "./assets/ball.png";   
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
-const float MINIMUM_COLLISION_DISTANCE = 0.3f;
+const float MINIMUM_COLLISION_DISTANCE = 1.0f;
 
 const int   NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -81,9 +81,15 @@ glm::vec3 g_other_position = glm::vec3(-4.0f, 0.0f, 0.0f);
 glm::vec3 g_other_movement = glm::vec3(0.0f, 0.0f, 0.0f);
 
 glm::vec3 g_ball_position = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 g_ball_movement = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 g_ball_movement = glm::vec3(3.0f, 0.0f, 0.0f);
+
+const float TOP_WALL = 3.4f;
+const float BOTTOM_WALL = -3.4f;
+const float LEFT_WALL = -4.8f;
+const float RIGHT_WALL = 4.8f;
 
 float g_player_speed = 1.0f;
+float g_ball_speed = 2.0f;
 
 GLuint load_texture(const char* filepath)
 {
@@ -109,7 +115,6 @@ GLuint load_texture(const char* filepath)
     return textureID;
 }
 
-
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -129,10 +134,16 @@ void initialise()
 
     g_model_matrix = glm::mat4(1.0f);
     g_other_model_matrix = glm::mat4(1.0f);
-    g_ball_model_matrix = glm::mat4(1.0f);
 
-    //g_other_model_matrix = glm::translate(g_other_model_matrix, glm::vec3(1.0f, 1.0f, 0.0f));
-    //g_other_position += g_other_movement;
+    float start_angle = ((float)rand() / (RAND_MAX)) + 1;
+    printf("%f\n", start_angle);
+    g_ball_model_matrix = glm::mat4(1.0f);
+    g_ball_movement.x = 1.0f * start_angle;
+	g_ball_movement.y = 1.0f * start_angle;
+
+    //g_other_model_matrix = glm::mat4(1.0f);
+    g_other_model_matrix = glm::translate(g_other_model_matrix, glm::vec3(1.0f, 1.0f, 0.0f));
+    g_other_position += g_other_movement;
 
     // Camera
     g_view_matrix = glm::mat4(1.0f);
@@ -173,7 +184,6 @@ void process_input()
             case SDLK_q:
                 g_game_is_running = false;
                 break;
-
             default:
                 break;
             }
@@ -206,14 +216,10 @@ void process_input()
     }
 }
 
-bool check_collision(glm::vec3& position_a, glm::vec3& position_b)  //
-{                                                                   //
-    // —————————————————  Distance Formula ———————————————————————— //
-    return sqrt(                                                    //
-        pow(position_b[0] - position_a[0], 2) +             //
-        pow(position_b[1] - position_b[1], 2)               //
-    ) < MINIMUM_COLLISION_DISTANCE;                         //
-}                                                                   //
+bool check_collision(glm::vec3& position_a, glm::vec3& position_b) 
+{                                                                   
+    return sqrt(pow(position_b[0] - position_a[0], 2) + pow(position_b[1] - position_a[1], 2)) < MINIMUM_COLLISION_DISTANCE;
+}                                                                  
 
 void update()
 {
@@ -228,32 +234,42 @@ void update()
     g_other_model_matrix = glm::mat4(1.0f);
     g_other_position += g_other_movement * g_player_speed * delta_time;
     g_other_model_matrix = glm::translate(g_other_model_matrix, g_other_position);
+    
 
-    if (g_player_position.y > 3.0f)
+    // Collision Checks
+
+    if (g_player_position.y > TOP_WALL)
     {
-		g_player_position.y = 3.0f;
+		g_player_position.y = TOP_WALL;
 	}
-    else if (g_player_position.y < -3.0f)
+    else if (g_player_position.y < BOTTOM_WALL)
     {
-		g_player_position.y = -3.0f;
+		g_player_position.y = BOTTOM_WALL;
 	}
 
-    if (g_other_position.y > 3.0f)
+    if (g_other_position.y > TOP_WALL)
     {
-		g_other_position.y = 3.0f;
+		g_other_position.y = TOP_WALL;
 	}
-    else if (g_other_position.y < -3.0f)
+    else if (g_other_position.y < BOTTOM_WALL)
     {
-		g_other_position.y = -3.0f;
+		g_other_position.y = BOTTOM_WALL;
 	}
-        
-    //printf("Player: %f, %f\n", g_player_position.y, g_other_position.y);
 
-    // need to check collision with either paddle
-    //if (check_collision(g_player_position, g_other_position))   
-    //{                                                           //
-    //    std::cout << std::time(nullptr) << ": collision.\n";    //
-    //}                                                           //
+	// get relative position from the center of the paddle //
+    if (check_collision(g_player_position, g_ball_position) || (check_collision(g_other_position, g_ball_position))) 
+    {                                                           
+        g_ball_movement.x = -g_ball_movement.x;
+    }                                                          
+
+    if (g_ball_position.y > TOP_WALL || g_ball_position.y < BOTTOM_WALL)
+    {
+        g_ball_movement.y = -g_ball_movement.y;
+	}
+
+    g_ball_model_matrix = glm::mat4(1.0f);
+    g_ball_position += g_ball_movement * g_ball_speed * delta_time;
+	g_ball_model_matrix = glm::translate(g_ball_model_matrix, g_ball_position); 
 }
 
 void draw_object(glm::mat4& object_model_matrix, GLuint& object_texture_id)
@@ -267,6 +283,7 @@ void render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // adjusting this to make the collision match the texture
     float vertices[] = {
         -0.5f, -0.5f, 0.5f, -0.5f, 0.5f, 0.5f,
         -0.5f, -0.5f, 0.5f, 0.5f, -0.5f, 0.5f
@@ -294,7 +311,6 @@ void render()
 }
 
 void shutdown() { SDL_Quit(); }
-
 
 int main(int argc, char* argv[])
 {
