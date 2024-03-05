@@ -1,10 +1,20 @@
+/**
+* Author: Aneesh Maganti
+* Assignment: Lunar Lander
+* Date due: 2024-09-03, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define LOG(argument) std::cout << argument << '\n'
 #define STB_IMAGE_IMPLEMENTATION
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define NUMBER_OF_ENEMIES 3
 #define FIXED_TIMESTEP 0.0166666f
-#define ACC_OF_GRAVITY -4.81f
+#define ACC_OF_GRAVITY -1.81f
 #define PLATFORM_COUNT 3
 
 #ifdef _WINDOWS
@@ -54,6 +64,7 @@ const int NUMBER_OF_TEXTURES = 1;  // to be generated, that is
 const GLint LEVEL_OF_DETAIL  = 0;  // base image level; Level n is the nth mipmap reduction image
 const GLint TEXTURE_BORDER   = 0;  // this value MUST be zero
 
+
 // ————— VARIABLES ————— //
 GameState g_game_state;
 
@@ -97,7 +108,7 @@ GLuint load_texture(const char* filepath)
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
-    g_display_window = SDL_CreateWindow("Hello, Entities!",
+    g_display_window = SDL_CreateWindow("Project 3",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH, WINDOW_HEIGHT,
         SDL_WINDOW_OPENGL);
@@ -126,7 +137,7 @@ void initialise()
     // ————— PLAYER ————— //
     // Existing
     g_game_state.player = new Entity();
-    g_game_state.player->set_position(glm::vec3(0.0f));
+    g_game_state.player->set_position(glm::vec3(0.0f, 4.0f, 0.0f));
     g_game_state.player->set_movement(glm::vec3(0.0f));
     g_game_state.player->set_acceleration(glm::vec3(0.0f, ACC_OF_GRAVITY * 0.1, 0.0f));
     g_game_state.player->set_speed(1.0f);

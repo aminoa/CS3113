@@ -13,14 +13,14 @@
 #include "ShaderProgram.h"
 #include "Entity.h"
 
+const float MAX_FALL_SPEED = 0.2f;
+
 Entity::Entity()
 {
-    // ––––– PHYSICS ––––– //
     m_position = glm::vec3(0.0f);
     m_velocity = glm::vec3(0.0f);
     m_acceleration = glm::vec3(0.0f);
 
-    // ––––– TRANSLATION ––––– //
     m_movement = glm::vec3(0.0f);
     m_speed = 0;
     m_model_matrix = glm::mat4(1.0f);
@@ -37,15 +37,12 @@ Entity::~Entity()
 
 void Entity::draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint texture_id, int index)
 {
-    // Step 1: Calculate the UV location of the indexed frame
     float u_coord = (float)(index % m_animation_cols) / (float)m_animation_cols;
     float v_coord = (float)(index / m_animation_cols) / (float)m_animation_rows;
 
-    // Step 2: Calculate its UV size
     float width = 1.0f / (float)m_animation_cols;
     float height = 1.0f / (float)m_animation_rows;
 
-    // Step 3: Just as we have done before, match the texture coordinates to the vertices
     float tex_coords[] =
     {
         u_coord, v_coord + height, u_coord + width, v_coord + height, u_coord + width, v_coord,
@@ -58,7 +55,6 @@ void Entity::draw_sprite_from_texture_atlas(ShaderProgram* program, GLuint textu
         -0.5, -0.5, 0.5,  0.5, -0.5, 0.5
     };
 
-    // Step 4: And render
     glBindTexture(GL_TEXTURE_2D, texture_id);
 
     glVertexAttribPointer(program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices);
@@ -82,7 +78,6 @@ void Entity::update(float delta_time, Entity* collidable_entities, int collidabl
     m_collided_left = false;
     m_collided_right = false;
 
-    // ––––– ANIMATION ––––– //
     if (m_animation_indices != NULL)
     {
         if (glm::length(m_movement) != 0)
@@ -102,8 +97,20 @@ void Entity::update(float delta_time, Entity* collidable_entities, int collidabl
             }
         }
     }
+    
+    // cap the horizontal velocity to be the falling speed
+	if (m_velocity.x > m_velocity.y)
+	{
+        m_velocity.x = m_velocity.y;
+	}
+    
+    // cap the vertical velocity to be the falling speed
+	if (m_velocity.y > MAX_FALL_SPEED)
+	{
+		m_velocity.y = MAX_FALL_SPEED;
+	}
 
-    // ––––– GRAVITY ––––– //
+
     m_velocity.x = m_movement.x * m_speed;
     m_velocity += m_acceleration * delta_time;
 

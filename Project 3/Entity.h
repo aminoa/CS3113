@@ -72,10 +72,21 @@ public:
     void update(float delta_time, Entity* collidable_entities, int collidable_entity_count);
     void render(ShaderProgram* program);
     
-    void move_left()  { m_movement.x = -1.0f; };
-    void move_right() { m_movement.x = 1.0f;  };
+    // need to change acceleration
+    void move_left()  
+    { 
+        m_movement.x -= -0.2f; 
+        m_acceleration.x += -0.02f; 
+    };
+    void move_right() 
+    { 
+        m_movement.x += 0.2f;
+        m_acceleration.x += 0.02f;
+    };
+
     void move_up()    { m_movement.y = 1.0f;  };
     void move_down()  { m_movement.y = -1.0f; };
+
 
     void activate()   { m_is_active = true; };
     void deactivate() { m_is_active = false; };
