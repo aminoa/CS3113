@@ -1,6 +1,13 @@
 #define GL_SILENCE_DEPRECATION
 #define STB_IMAGE_IMPLEMENTATION
 
+#define GAME_WIN 1
+#define GAME_LOSE 2
+
+#define PLAYER_TYPE 0
+#define WIN_PLATFORM 1
+#define SPIKE_PLATFORM 2
+
 #ifdef _WINDOWS
 #include <GL/glew.h>
 #endif
@@ -128,8 +135,6 @@ void Entity::update(float delta_time, Entity* collidable_entities, int collidabl
     m_position.y += m_velocity.y * delta_time;
     check_collision_y(collidable_entities, collidable_entity_count);
 
-    // 
-
     m_position.x += m_velocity.x * delta_time;
     check_collision_x(collidable_entities, collidable_entity_count);
 
@@ -145,25 +150,17 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
         // STEP 1: For every entity that our player can collide with...
         Entity* collidable_entity = &collidable_entities[i];
 
+        // we want to check if we're touching a spike platform
+
         if (check_collision(collidable_entity))
         {
-            // STEP 2: Calculate the distance between its centre and our centre
-            //         and use that to calculate the amount of overlap between
-            //         both bodies.
-            float y_distance = fabs(m_position.y - collidable_entity->m_position.y);
-            float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->m_height / 2.0f));
-
-            // STEP 3: "Unclip" ourselves from the other entity, and zero our
-            //         vertical velocity.
-            if (m_velocity.y > 0) {
-                m_position.y -= y_overlap;
-                m_velocity.y = 0;
-                m_collided_top = true;
+            if (collidable_entity->m_object_type == WIN_PLATFORM)
+            {
+                m_game_end = GAME_WIN;
             }
-            else if (m_velocity.y < 0) {
-                m_position.y += y_overlap;
-                m_velocity.y = 0;
-                m_collided_bottom = true;
+            else if (collidable_entity->m_object_type == SPIKE_PLATFORM)
+            {
+                m_game_end = GAME_LOSE;
             }
         }
     }
@@ -177,18 +174,18 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
 
         if (check_collision(collidable_entity))
         {
-            float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
-            float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
-            if (m_velocity.x > 0) {
-                m_position.x -= x_overlap;
-                m_velocity.x = 0;
-                m_collided_right = true;
-            }
-            else if (m_velocity.x < 0) {
-                m_position.x += x_overlap;
-                m_velocity.x = 0;
-                m_collided_left = true;
-            }
+            //float x_distance = fabs(m_position.x - collidable_entity->m_position.x);
+            //float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->m_width / 2.0f));
+            //if (m_velocity.x > 0) {
+            //    m_position.x -= x_overlap;
+            //    m_velocity.x = 0;
+            //    m_collided_right = true;
+            //}
+            //else if (m_velocity.x < 0) {
+            //    m_position.x += x_overlap;
+            //    m_velocity.x = 0;
+            //    m_collided_left = true;
+            //}
         }
     }
 }

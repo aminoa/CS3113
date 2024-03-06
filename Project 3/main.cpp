@@ -17,8 +17,10 @@
 #define ACC_OF_GRAVITY -1.0f
 #define PLATFORM_COUNT 3
 #define SPIKE_PLATFORM_COUNT 9
-
 #ifdef _WINDOWS
+#define GAME_WIN 1
+#define GAME_LOSE 2
+
 #include <GL/glew.h>
 #endif
 
@@ -32,6 +34,7 @@
 #include <ctime>
 #include <vector>
 #include "Entity.h"
+#include "helper.h"
 
 // ————— STRUCTS AND ENUMS —————//
 struct GameState
@@ -39,6 +42,7 @@ struct GameState
     Entity* player;
     Entity* platforms; //win platform
     Entity* spikePlatforms;
+    Entity* resultText;
 };
 
 // ————— CONSTANTS ————— //
@@ -61,7 +65,8 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 const float MILLISECONDS_IN_SECOND  = 1000.0;
 const char  SPRITESHEET_FILEPATH[]  = "assets/george_0.png",
             PLATFORM_FILEPATH[]     = "assets/platformPack_tile027.png",
-			SPIKE_FILEPATH[]        = "assets/spikePlatform.png";
+			SPIKE_FILEPATH[]        = "assets/spikePlatform.png",
+			FONT_FILEPATH[]         = "assets/font1.png";
 
 const int NUMBER_OF_TEXTURES = 1;  // to be generated, that is
 const GLint LEVEL_OF_DETAIL  = 0;  // base image level; Level n is the nth mipmap reduction image
@@ -107,6 +112,71 @@ GLuint load_texture(const char* filepath)
     return textureID;
 }
 
+const int FONTBANK_SIZE = 16;
+
+void draw_text(ShaderProgram* g_program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
+        int spritesheet_index = (int)text[i];  // ascii value of character
+        float offset = (screen_size + spacing) * i;
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            });
+    }
+
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+
+    g_program->set_model_matrix(model_matrix);
+    glUseProgram(g_program->get_program_id());
+
+    glVertexAttribPointer(g_program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices.data());
+    glEnableVertexAttribArray(g_program->get_position_attribute());
+    glVertexAttribPointer(g_program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, texture_coordinates.data());
+    glEnableVertexAttribArray(g_program->get_tex_coordinate_attribute());
+
+    glBindTexture(GL_TEXTURE_2D, font_texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+    glDisableVertexAttribArray(g_program->get_position_attribute());
+    glDisableVertexAttribArray(g_program->get_tex_coordinate_attribute());
+}
+
+
 void initialise()
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -135,6 +205,11 @@ void initialise()
     glUseProgram(g_shader_program.get_program_id());
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
+    
+    // Text
+    g_game_state.resultText = new Entity();
+    g_game_state.resultText->m_texture_id = load_texture(FONT_FILEPATH);
+	g_game_state.resultText->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
 
     // ————— PLAYER ————— //
     // Existing
@@ -144,6 +219,7 @@ void initialise()
     g_game_state.player->set_acceleration(glm::vec3(0.0f, ACC_OF_GRAVITY * 0.1, 0.0f));
     g_game_state.player->set_speed(1.0f);
     g_game_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
+    g_game_state.player->m_object_type = 0;
 
     // Walking
     g_game_state.player->m_walking[g_game_state.player->LEFT]   = new int[4] { 1, 5, 9,  13 };
@@ -168,6 +244,7 @@ void initialise()
         g_game_state.platforms[i].m_texture_id = load_texture(PLATFORM_FILEPATH);
         g_game_state.platforms[i].set_position(glm::vec3(i - 1.0f, -4.0f, 0.0f));
         g_game_state.platforms[i].update(0.0f, NULL, 0);
+        g_game_state.platforms[i].m_object_type = 1; 
     }
 
     g_game_state.spikePlatforms = new Entity[SPIKE_PLATFORM_COUNT];
@@ -177,6 +254,7 @@ void initialise()
         g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
         g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 1.0f, 1.0f, 0.0f));
         g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
+        g_game_state.spikePlatforms[i].m_object_type = 2;
     }
 
     for (int i = 3; i < 6; i++) // Three sets of spike platforms
@@ -184,6 +262,7 @@ void initialise()
         g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
         g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 1.0f, -2.0f, 0.0f));
         g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
+        g_game_state.spikePlatforms[i].m_object_type = 2;
     }
 
     for (int i = 6; i < 9; i++) // Three sets of spike platforms
@@ -191,6 +270,7 @@ void initialise()
         g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
         g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 10.0f, -2.0f, 0.0f));
         g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
+        g_game_state.spikePlatforms[i].m_object_type = 2;
     }
 
     // ————— GENERAL ————— //
@@ -272,8 +352,21 @@ void update()
     {
         // Notice that we're using FIXED_TIMESTEP as our delta time
         g_game_state.player->update(FIXED_TIMESTEP, g_game_state.platforms, PLATFORM_COUNT);
+        g_game_state.player->update(FIXED_TIMESTEP, g_game_state.spikePlatforms, SPIKE_PLATFORM_COUNT);
         delta_time -= FIXED_TIMESTEP;
     }
+    
+    // check if the player has game win or game lose set 
+    if (g_game_state.player->m_game_end == GAME_WIN)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Win!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+		g_game_is_running = false;
+	}
+    else if (g_game_state.player->m_game_end == GAME_LOSE)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+		g_game_is_running = false;
+	}
 
     g_time_accumulator = delta_time;
 }
@@ -291,6 +384,16 @@ void render()
 
     // Spike platform
     for (int i = 0; i < SPIKE_PLATFORM_COUNT; i++) g_game_state.spikePlatforms[i].render(&g_shader_program);
+
+
+    if (g_game_state.player->m_game_end == 1)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Win!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+    }
+    else if (g_game_state.player->m_game_end == 2)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+    }
     
 
     // ————— GENERAL ————— //
@@ -310,7 +413,8 @@ int main(int argc, char* argv[])
         update();
         render();
     }
+    while(true){}
 
-    shutdown();
-    return 0;
+    //shutdown();
+    //return 0;
 }

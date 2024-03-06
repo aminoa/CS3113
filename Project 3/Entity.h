@@ -1,3 +1,7 @@
+#define PLAYER_TYPE 0
+#define WIN_PLATFORM 1
+#define SPIKE_PLATFORM 2
+
 class Entity
 {
 private:
@@ -30,6 +34,10 @@ public:
                      RIGHT  = 1,
                      UP     = 2,
                      DOWN   = 3;
+
+    // designate object type and game status
+    int m_object_type = -1;
+	int m_game_end = 0;
 
     // ————— ANIMATION ————— //
     int** m_walking = new int* [4]
