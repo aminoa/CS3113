@@ -110,6 +110,17 @@ void Entity::update(float delta_time, Entity* collidable_entities, int collidabl
 		m_velocity.y = MAX_FALL_SPEED;
 	}
 
+    // prevent the player from going off the screen
+	if (m_position.x < -4.5f)
+	{
+		m_position.x = -4.5f;
+        m_acceleration.x = 0;
+	}
+	else if (m_position.x > 4.5f)
+	{
+		m_position.x = 4.5f;
+        m_acceleration.x = 0;
+	}
 
     m_velocity.x = m_movement.x * m_speed;
     m_velocity += m_acceleration * delta_time;
@@ -117,18 +128,10 @@ void Entity::update(float delta_time, Entity* collidable_entities, int collidabl
     m_position.y += m_velocity.y * delta_time;
     check_collision_y(collidable_entities, collidable_entity_count);
 
+    // 
+
     m_position.x += m_velocity.x * delta_time;
     check_collision_x(collidable_entities, collidable_entity_count);
-
-    // ––––– JUMPING ––––– //
-    if (m_is_jumping)
-    {
-        // STEP 1: Immediately return the flag to its original false state
-        m_is_jumping = false;
-
-        // STEP 2: The player now acquires an upward velocity
-        m_velocity.y += m_jumping_power;
-    }
 
     // ––––– TRANSFORMATIONS ––––– //
     m_model_matrix = glm::mat4(1.0f);

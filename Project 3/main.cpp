@@ -14,8 +14,9 @@
 #define GL_GLEXT_PROTOTYPES 1
 #define NUMBER_OF_ENEMIES 3
 #define FIXED_TIMESTEP 0.0166666f
-#define ACC_OF_GRAVITY -1.81f
+#define ACC_OF_GRAVITY -1.0f
 #define PLATFORM_COUNT 3
+#define SPIKE_PLATFORM_COUNT 9
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -36,16 +37,17 @@
 struct GameState
 {
     Entity* player;
-    Entity* platforms;
+    Entity* platforms; //win platform
+    Entity* spikePlatforms;
 };
 
 // ————— CONSTANTS ————— //
 const int WINDOW_WIDTH = 640,
 WINDOW_HEIGHT = 480;
 
-const float BG_RED = 0.1922f,
-            BG_BLUE = 0.549f,
-            BG_GREEN = 0.9059f,
+const float BG_RED = 0.0f,
+            BG_BLUE = 0.0f,
+            BG_GREEN = 0.0f,
             BG_OPACITY = 1.0f;
 
 const int VIEWPORT_X = 0,
@@ -58,12 +60,12 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 
 const float MILLISECONDS_IN_SECOND  = 1000.0;
 const char  SPRITESHEET_FILEPATH[]  = "assets/george_0.png",
-            PLATFORM_FILEPATH[]     = "assets/platformPack_tile027.png";
+            PLATFORM_FILEPATH[]     = "assets/platformPack_tile027.png",
+			SPIKE_FILEPATH[]        = "assets/spikePlatform.png";
 
 const int NUMBER_OF_TEXTURES = 1;  // to be generated, that is
 const GLint LEVEL_OF_DETAIL  = 0;  // base image level; Level n is the nth mipmap reduction image
 const GLint TEXTURE_BORDER   = 0;  // this value MUST be zero
-
 
 // ————— VARIABLES ————— //
 GameState g_game_state;
@@ -158,17 +160,37 @@ void initialise()
     g_game_state.player->set_height(0.9f);
     g_game_state.player->set_width(0.9f);
 
-    // Jumping
-    g_game_state.player->m_jumping_power = 3.0f;
-
     // ————— PLATFORM ————— //
     g_game_state.platforms = new Entity[PLATFORM_COUNT];
 
     for (int i = 0; i < PLATFORM_COUNT; i++)
     {
         g_game_state.platforms[i].m_texture_id = load_texture(PLATFORM_FILEPATH);
-        g_game_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
+        g_game_state.platforms[i].set_position(glm::vec3(i - 1.0f, -4.0f, 0.0f));
         g_game_state.platforms[i].update(0.0f, NULL, 0);
+    }
+
+    g_game_state.spikePlatforms = new Entity[SPIKE_PLATFORM_COUNT];
+    // Need to set the spike platforms
+    for (int i = 0; i < 3; i++) // Three sets of spike platforms
+    {
+        g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
+        g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 1.0f, 1.0f, 0.0f));
+        g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
+    }
+
+    for (int i = 3; i < 6; i++) // Three sets of spike platforms
+    {
+        g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
+        g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 1.0f, -2.0f, 0.0f));
+        g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
+    }
+
+    for (int i = 6; i < 9; i++) // Three sets of spike platforms
+    {
+        g_game_state.spikePlatforms[i].m_texture_id = load_texture(SPIKE_FILEPATH);
+        g_game_state.spikePlatforms[i].set_position(glm::vec3(i - 10.0f, -2.0f, 0.0f));
+        g_game_state.spikePlatforms[i].update(0.0f, NULL, 0);    
     }
 
     // ————— GENERAL ————— //
@@ -196,11 +218,6 @@ void process_input()
             case SDLK_q:
                 // Quit the game with a keystroke
                 g_game_is_running = false;
-                break;
-
-            case SDLK_SPACE:
-                // Jump
-                if (g_game_state.player->m_collided_bottom) g_game_state.player->m_is_jumping = true;
                 break;
 
             default:
@@ -271,6 +288,10 @@ void render()
 
     // ————— PLATFORM ————— //
     for (int i = 0; i < PLATFORM_COUNT; i++) g_game_state.platforms[i].render(&g_shader_program);
+
+    // Spike platform
+    for (int i = 0; i < SPIKE_PLATFORM_COUNT; i++) g_game_state.spikePlatforms[i].render(&g_shader_program);
+    
 
     // ————— GENERAL ————— //
     SDL_GL_SwapWindow(g_display_window);
