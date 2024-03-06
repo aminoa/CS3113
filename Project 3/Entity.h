@@ -39,6 +39,9 @@ public:
     int m_object_type = -1;
 	int m_game_end = 0;
 
+    // fuel capacity;
+    int fuel = 20000;
+
     // ————— ANIMATION ————— //
     int** m_walking = new int* [4]
         {

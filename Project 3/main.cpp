@@ -34,6 +34,7 @@
 #include <ctime>
 #include <vector>
 #include "Entity.h"
+#include <string>
 #include "helper.h"
 
 // ————— STRUCTS AND ENUMS —————//
@@ -43,6 +44,7 @@ struct GameState
     Entity* platforms; //win platform
     Entity* spikePlatforms;
     Entity* resultText;
+    Entity* fuelText;
 };
 
 // ————— CONSTANTS ————— //
@@ -206,10 +208,14 @@ void initialise()
 
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
     
-    // Text
+    // ----- TEXT  ----- //
     g_game_state.resultText = new Entity();
     g_game_state.resultText->m_texture_id = load_texture(FONT_FILEPATH);
 	g_game_state.resultText->set_position(glm::vec3(0.0f, 0.0f, 0.0f));
+    
+    g_game_state.fuelText = new Entity();
+    g_game_state.fuelText->m_texture_id = load_texture(FONT_FILEPATH);
+    g_game_state.fuelText->set_position(glm::vec3(-4.5f, 3.5f, 0.0f));
 
     // ————— PLAYER ————— //
     // Existing
@@ -311,15 +317,17 @@ void process_input()
 
     const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
-    if (key_state[SDL_SCANCODE_LEFT])
+    if (key_state[SDL_SCANCODE_LEFT] and g_game_state.player->fuel > 0)
     {
         g_game_state.player->move_left();
         g_game_state.player->m_animation_indices = g_game_state.player->m_walking[g_game_state.player->LEFT];
+        g_game_state.player->fuel -= 1;
     }
-    else if (key_state[SDL_SCANCODE_RIGHT])
+    else if (key_state[SDL_SCANCODE_RIGHT] and g_game_state.player->fuel > 0)
     {
         g_game_state.player->move_right();
         g_game_state.player->m_animation_indices = g_game_state.player->m_walking[g_game_state.player->RIGHT];
+        g_game_state.player->fuel -= 1;
     }
 
     // This makes sure that the player can't move faster diagonally
@@ -394,7 +402,9 @@ void render()
     {
         draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
     }
-    
+
+    // fuel text
+    draw_text(&g_shader_program, g_game_state.fuelText->m_texture_id, "Fuel: " + std::to_string(g_game_state.player->fuel), 0.5f, 0.1f, glm::vec3(-1.0f, 3.0f, 0.0f));
 
     // ————— GENERAL ————— //
     SDL_GL_SwapWindow(g_display_window);
