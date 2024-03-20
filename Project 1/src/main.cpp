@@ -8,6 +8,8 @@
 * Academic Misconduct.
 **/
 
+// This uses the previous VCPKG build system
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define LOG(argument) std::cout << argument << '\n'
