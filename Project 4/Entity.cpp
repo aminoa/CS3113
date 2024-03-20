@@ -134,10 +134,10 @@ void Entity::ai_guard(Entity* player)
     // TUX IS OUT TO GET YOU!!
     case POLICE_CHASER:
         if (m_position.x > player->get_position().x) {
-            m_movement += glm::vec3(-0.1f, 0.0f, 0.0f);
+            m_movement += glm::vec3(-0.01f, 0.0f, 0.0f);
         }
         else {
-            m_movement += glm::vec3(0.1f, 0.0f, 0.0f);
+            m_movement += glm::vec3(0.01f, 0.0f, 0.0f);
         }
         break;
 
@@ -183,11 +183,11 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_velocity += m_acceleration * delta_time;
 
     m_position.y += m_velocity.y * delta_time;
-    check_collision_y(collidable_entities, collidable_entity_count);
+    check_collision_y(collidable_entities, player, collidable_entity_count);
     //std::cout << m_collided_bottom << std::endl;
 
     m_position.x += m_velocity.x * delta_time;
-    check_collision_x(collidable_entities, collidable_entity_count);
+    check_collision_x(collidable_entities, player, collidable_entity_count);
 
     // ––––– JUMPING ––––– //
     if (m_is_jumping)
@@ -204,11 +204,27 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_model_matrix = glm::translate(m_model_matrix, m_position);
 }
 
-void const Entity::check_collision_y(Entity* collidable_entities, int collidable_entity_count)
+void const Entity::check_collision_y(Entity* collidable_entities, Entity* player, int collidable_entity_count)
 {
     for (int i = 0; i < collidable_entity_count; i++)
     {
         Entity* collidable_entity = &collidable_entities[i];
+        
+        if (check_collision(player))
+        {
+			float y_distance = fabs(m_position.y - player->get_position().y);
+			float y_overlap = fabs(y_distance - (m_height / 2.0f) - (player->get_height() / 2.0f));
+            if (m_velocity.y > 0) {
+				//m_position.y -= y_overlap;
+				//m_velocity.y = 0;
+				m_player_collided_top = true;
+			}
+            else if (m_velocity.y < 0) {
+				//m_position.y += y_overlap;
+				//m_velocity.y = 0;
+				m_player_collided_bottom = true;
+			}
+        }
 
         if (check_collision(collidable_entity))
         {
@@ -228,11 +244,27 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
     }
 }
 
-void const Entity::check_collision_x(Entity* collidable_entities, int collidable_entity_count)
+void const Entity::check_collision_x(Entity* collidable_entities, Entity* player, int collidable_entity_count)
 {
     for (int i = 0; i < collidable_entity_count; i++)
     {
         Entity* collidable_entity = &collidable_entities[i];
+
+        if (check_collision(player))
+        {
+            float x_distance = fabs(m_position.x - player->get_position().x);
+			float x_overlap = fabs(x_distance - (m_width / 2.0f) - (player->get_width() / 2.0f));
+            if (m_velocity.x > 0) {
+				m_position.x -= x_overlap;
+				m_velocity.x = 0;
+				m_player_collided_right = true;
+			}
+            else if (m_velocity.x < 0) {
+				m_position.x += x_overlap;
+				m_velocity.x = 0;
+				m_player_collided_left = true;
+			}
+        }
 
         if (check_collision(collidable_entity))
         {

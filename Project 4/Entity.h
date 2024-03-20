@@ -68,6 +68,11 @@ public:
     bool m_collided_left = false;
     bool m_collided_right = false;
 
+    bool m_player_collided_top = false;
+    bool m_player_collided_bottom = false;
+    bool m_player_collided_left = false;
+    bool m_player_collided_right = false;
+
     int m_patrol_direction = 1;
 
     GLuint    m_texture_id;
@@ -81,8 +86,8 @@ public:
     void render(ShaderProgram* program);
 
     bool const check_collision(Entity* other) const;
-    void const check_collision_y(Entity* collidable_entities, int collidable_entity_count);
-    void const check_collision_x(Entity* collidable_entities, int collidable_entity_count);
+    void const check_collision_y(Entity* collidable_entities, Entity* player, int collidable_entity_count);
+    void const check_collision_x(Entity* collidable_entities, Entity* player, int collidable_entity_count);
 
     void move_left()    { m_movement.x = -1.0f; };
     void move_right()   { m_movement.x = 1.0f; };

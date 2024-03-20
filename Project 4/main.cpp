@@ -343,9 +343,25 @@ void update()
         g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, g_game_state.platforms, PLATFORM_COUNT);
 
         for (int i = 0; i < ENEMY_COUNT; i++) g_game_state.enemies[i].update(FIXED_TIMESTEP, g_game_state.player, g_game_state.platforms, PLATFORM_COUNT);
+        //for (int i = 0; i < ENEMY_COUNT; i++) g_game_state.enemies[i].update(FIXED_TIMESTEP, g_game_state.player, g_game_state.player, PLATFORM_COUNT);
 
         delta_time -= FIXED_TIMESTEP;
     }
+
+    // check if player bottom colided and that it's an enemy
+    for (int i = 0; i < ENEMY_COUNT; i++)
+    {
+        if (g_game_state.enemies[i].m_player_collided_top)
+        {
+            g_game_state.enemies[i].deactivate();
+		}
+        else if (g_game_state.enemies[i].m_player_collided_bottom || g_game_state.enemies[i].m_player_collided_left || g_game_state.enemies[i].m_player_collided_right)
+        {
+			g_game_is_running = false;
+		}
+        
+	}
+    
 
     g_time_accumulator = delta_time;
 }
