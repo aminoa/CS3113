@@ -1,6 +1,6 @@
 enum EntityType { PLATFORM, PLAYER, ENEMY   };
-enum AIType     { WALKER, GUARD, FLOATER     };
-enum AIState    { WALKING, IDLE, ATTACKING  };
+enum AIType     { WALKER, GUARD, FLOATER , PATROLLER    };
+enum AIState    { POLICE_CHASER, IDLE, ATTACKING  };
 
 class Entity
 {
@@ -68,6 +68,8 @@ public:
     bool m_collided_left = false;
     bool m_collided_right = false;
 
+    int m_patrol_direction = 1;
+
     GLuint    m_texture_id;
 
     // ————— METHODS ————— //
@@ -91,6 +93,7 @@ public:
     void ai_walk();
     void ai_float();
     void ai_guard(Entity* player);
+    void ai_patrol();
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };

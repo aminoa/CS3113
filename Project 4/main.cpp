@@ -235,6 +235,14 @@ void initialise()
     g_game_state.enemies[1].set_speed(0.5f);
     g_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
+    g_game_state.enemies[2].set_entity_type(ENEMY);
+	g_game_state.enemies[2].set_ai_type(PATROLLER); // patrols the ground platform
+    g_game_state.enemies[2].m_texture_id = enemy_texture_id;
+    g_game_state.enemies[2].set_position(glm::vec3(2.0f, -2.0f, 0.0f));
+    g_game_state.enemies[2].set_movement(glm::vec3(0.0f));
+    g_game_state.enemies[2].set_speed(0.5f);
+    g_game_state.enemies[2].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
+
     // ––––– AUDIO STUFF ––––– //
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 

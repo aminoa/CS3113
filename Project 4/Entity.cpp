@@ -89,6 +89,9 @@ void Entity::ai_activate(Entity* player)
         ai_float();
         break;
 
+    case PATROLLER:
+        ai_patrol();
+        break;
     default:
         break;
     }
@@ -106,23 +109,36 @@ void Entity::ai_float()
 	m_is_jumping = true;
 }
 
+void Entity::ai_patrol()
+{
+    m_movement = glm::vec3(m_patrol_direction * 1.0f, 0.0f, 0.0f);
+    // check if the entity is at the edge of the platform
+    if (m_position.x < -4.25829) {
+        m_patrol_direction = 1;
+        //m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+        // flip the entity direction
+    }
+    else if (m_position.x > 4.25829) {
+        //m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+        m_patrol_direction = -1;
+    }
+}
+
 void Entity::ai_guard(Entity* player)
 {
     switch (m_ai_state) {
     case IDLE:
-        if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = WALKING;
+        if (glm::distance(m_position, player->get_position()) < 3.0f) m_ai_state = POLICE_CHASER;
         break;
 
-    case WALKING:
+    // TUX IS OUT TO GET YOU!!
+    case POLICE_CHASER:
         if (m_position.x > player->get_position().x) {
-            m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+            m_movement += glm::vec3(-0.1f, 0.0f, 0.0f);
         }
         else {
-            m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+            m_movement += glm::vec3(0.1f, 0.0f, 0.0f);
         }
-        break;
-
-    case ATTACKING:
         break;
 
     default:
