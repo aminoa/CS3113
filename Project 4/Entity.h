@@ -1,5 +1,5 @@
 enum EntityType { PLATFORM, PLAYER, ENEMY   };
-enum AIType     { WALKER, GUARD             };
+enum AIType     { WALKER, GUARD, FLOATER     };
 enum AIState    { WALKING, IDLE, ATTACKING  };
 
 class Entity
@@ -89,6 +89,7 @@ public:
 
     void ai_activate(Entity* player);
     void ai_walk();
+    void ai_float();
     void ai_guard(Entity* player);
 
     void activate() { m_is_active = true; };

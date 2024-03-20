@@ -14,7 +14,7 @@
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
 #define PLATFORM_COUNT 11
-#define ENEMY_COUNT 1
+#define ENEMY_COUNT 3
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -171,23 +171,21 @@ void initialise()
 
     g_game_state.platforms = new Entity[PLATFORM_COUNT];
 
-    g_game_state.platforms[PLATFORM_COUNT - 1].m_texture_id = platform_texture_id;
-    g_game_state.platforms[PLATFORM_COUNT - 1].set_position(glm::vec3(-1.5f, -2.35f, 0.0f));
-    g_game_state.platforms[PLATFORM_COUNT - 1].set_width(0.4f);
-    g_game_state.platforms[PLATFORM_COUNT - 1].update(0.0f, NULL, NULL, 0);
+    for (int i = PLATFORM_COUNT - 2; i < PLATFORM_COUNT; i++)
+    {
+		g_game_state.platforms[i].m_texture_id = platform_texture_id;
+		g_game_state.platforms[i].set_position(glm::vec3(i - 8.0f, -1.0f, 0.0f));
+		g_game_state.platforms[i].set_width(0.4f);
+		g_game_state.platforms[i].update(0.0f, NULL, NULL, 0);
+	}
 
     for (int i = 0; i < PLATFORM_COUNT - 2; i++)
     {
         g_game_state.platforms[i].m_texture_id = platform_texture_id;
-        g_game_state.platforms[i].set_position(glm::vec3(i - 1.0f, -3.0f, 0.0f));
+        g_game_state.platforms[i].set_position(glm::vec3(i - 4.0f, -3.0f, 0.0f));
         g_game_state.platforms[i].set_width(0.4f);
         g_game_state.platforms[i].update(0.0f, NULL, NULL, 0);
     }
-
-    g_game_state.platforms[PLATFORM_COUNT - 2].m_texture_id = platform_texture_id;
-    g_game_state.platforms[PLATFORM_COUNT - 2].set_position(glm::vec3(2.5f, -2.5f, 0.0f));
-    g_game_state.platforms[PLATFORM_COUNT - 2].set_width(0.4f);
-    g_game_state.platforms[PLATFORM_COUNT - 2].update(0.0f, NULL, NULL, 0);
 
     // ––––– PLAYER (GEORGE) ––––– //
     // Existing
@@ -199,10 +197,6 @@ void initialise()
     g_game_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
 
     // Walking
-    //g_game_state.player->m_walking[g_game_state.player->LEFT]   = new int[4] { 1, 5, 9,  13 };
-    //g_game_state.player->m_walking[g_game_state.player->RIGHT]  = new int[4] { 3, 7, 11, 15 };
-    //g_game_state.player->m_walking[g_game_state.player->UP]     = new int[4] { 2, 6, 10, 14 };
-    //g_game_state.player->m_walking[g_game_state.player->DOWN]   = new int[4] { 0, 4, 8,  12 };
     g_game_state.player->m_walking[g_game_state.player->LEFT]   = new int[4] { 4, 5, 6, 7 };
     g_game_state.player->m_walking[g_game_state.player->RIGHT]  = new int[4] { 8, 9, 10, 11 };
     g_game_state.player->m_walking[g_game_state.player->UP]     = new int[4] { 12, 13, 14, 15 };
@@ -218,7 +212,7 @@ void initialise()
     g_game_state.player->set_width(0.9f);
 
     // Jumping
-    g_game_state.player->set_jumping_power(4.0f);
+    g_game_state.player->set_jumping_power(6.0f);
 
     // ––––– ENEMY (SOPHIE) ––––– //
     GLuint enemy_texture_id = load_texture(ENEMY_FILEPATH);
@@ -232,6 +226,14 @@ void initialise()
     g_game_state.enemies[0].set_movement(glm::vec3(0.0f));
     g_game_state.enemies[0].set_speed(0.5f);
     g_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+
+    g_game_state.enemies[1].set_entity_type(ENEMY);
+	g_game_state.enemies[1].set_ai_type(FLOATER); // only jumps in place
+    g_game_state.enemies[1].m_texture_id = enemy_texture_id;
+    g_game_state.enemies[1].set_position(glm::vec3(0.0f, -2.0f, 0.0f));
+    g_game_state.enemies[1].set_movement(glm::vec3(0.0f));
+    g_game_state.enemies[1].set_speed(0.5f);
+    g_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
     // ––––– AUDIO STUFF ––––– //
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);

@@ -85,6 +85,10 @@ void Entity::ai_activate(Entity* player)
         ai_guard(player);
         break;
 
+    case FLOATER:
+        ai_float();
+        break;
+
     default:
         break;
     }
@@ -93,6 +97,13 @@ void Entity::ai_activate(Entity* player)
 void Entity::ai_walk()
 {
     m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+}
+
+// slowly float up and you need to kill it before it goes off screen
+void Entity::ai_float()
+{
+    set_jumping_power(0.005);
+	m_is_jumping = true;
 }
 
 void Entity::ai_guard(Entity* player)
@@ -157,6 +168,7 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
 
     m_position.y += m_velocity.y * delta_time;
     check_collision_y(collidable_entities, collidable_entity_count);
+    //std::cout << m_collided_bottom << std::endl;
 
     m_position.x += m_velocity.x * delta_time;
     check_collision_x(collidable_entities, collidable_entity_count);
