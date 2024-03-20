@@ -15,6 +15,8 @@
 #define FIXED_TIMESTEP 0.0166666f
 #define PLATFORM_COUNT 11
 #define ENEMY_COUNT 3
+#define GAME_WIN 1
+#define GAME_LOSE 2
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -38,6 +40,7 @@ struct GameState
     Entity* player;
     Entity* platforms;
     Entity* enemies;
+    Entity* resultText;
 
     Mix_Music* bgm;
     Mix_Chunk* jump_sfx;
@@ -47,9 +50,9 @@ struct GameState
 const int   WINDOW_WIDTH = 640,
             WINDOW_HEIGHT = 480;
 
-const float BG_RED = 0.1922f,
-            BG_BLUE = 0.549f,
-            BG_GREEN = 0.9059f,
+const float BG_RED = 0.2f,
+            BG_BLUE = 0.2f,
+            BG_GREEN = 0.2f,
             BG_OPACITY = 1.0f;
 
 const int   VIEWPORT_X = 0,
@@ -67,8 +70,8 @@ const float MILLISECONDS_IN_SECOND  = 1000.0;
 // Platform - credit to Kenney (https://kenney.nl/assets/platformer-pack-redux)
 const char  SPRITESHEET_FILEPATH[]  = "assets/taekshi.png",
             PLATFORM_FILEPATH[]     = "assets/grass.png",
-            ENEMY_FILEPATH[]        = "assets/tux_pixel.png";
-
+            ENEMY_FILEPATH[]        = "assets/tux_pixel.png",
+			FONT_FILEPATH[]         = "assets/font1.png";
 
 // I made the BGM/SFX so credit to me
 const char  BGM_FILEPATH[]          = "assets/firsttest.wav",
@@ -108,6 +111,73 @@ Mix_Music* g_music;
 Mix_Chunk* g_bouncing_sfx;
 
 // ———— GENERAL FUNCTIONS ———— //
+const int FONTBANK_SIZE = 16;
+
+int g_enemies_killed = 0;
+
+void draw_text(ShaderProgram* g_program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
+        int spritesheet_index = (int)text[i];  // ascii value of character
+        float offset = (screen_size + spacing) * i;
+
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float)(spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float)(spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            });
+    }
+
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+
+    g_program->set_model_matrix(model_matrix);
+    glUseProgram(g_program->get_program_id());
+
+    glVertexAttribPointer(g_program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices.data());
+    glEnableVertexAttribArray(g_program->get_position_attribute());
+    glVertexAttribPointer(g_program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, texture_coordinates.data());
+    glEnableVertexAttribArray(g_program->get_tex_coordinate_attribute());
+
+    glBindTexture(GL_TEXTURE_2D, font_texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+    glDisableVertexAttribArray(g_program->get_position_attribute());
+    glDisableVertexAttribArray(g_program->get_tex_coordinate_attribute());
+}
+
+
 GLuint load_texture(const char* filepath)
 {
     int width, height, number_of_components;
@@ -243,6 +313,11 @@ void initialise()
     g_game_state.enemies[2].set_speed(0.5f);
     g_game_state.enemies[2].set_acceleration(glm::vec3(0.0f, 0.0f, 0.0f));
 
+    // Result Text
+    g_game_state.resultText = new Entity();
+    g_game_state.resultText->m_texture_id = load_texture(FONT_FILEPATH);
+	g_game_state.resultText->set_position(glm::vec3(0.0f, 1.0f, 0.0f));
+
     // ––––– AUDIO STUFF ––––– //
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 
@@ -351,17 +426,34 @@ void update()
     // check if player bottom colided and that it's an enemy
     for (int i = 0; i < ENEMY_COUNT; i++)
     {
+        if (!g_game_state.enemies[i].get_is_active()) continue;
+
         if (g_game_state.enemies[i].m_player_collided_top)
         {
+            std::cout << "Player jumps onto the Enemy \n";
             g_game_state.enemies[i].deactivate();
+            g_enemies_killed++;
 		}
-        else if (g_game_state.enemies[i].m_player_collided_bottom || g_game_state.enemies[i].m_player_collided_left || g_game_state.enemies[i].m_player_collided_right)
+        else if (g_game_state.enemies[i].m_player_collided_bottom)
         {
+            std::cout << "Enemy is on top of Player\n";
+			draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You oijodfjlka;jds;lkfjal;sdjfl;kjasdl;kfj;Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
 			g_game_is_running = false;
 		}
-        
+        else if (g_game_state.enemies[i].m_player_collided_left || g_game_state.enemies[i].m_player_collided_right)
+        {
+            std::cout << "Enemy bumps into the player\n";
+			draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+			g_game_is_running = false;
+        }
 	}
-    
+
+    // check if the player has game win or game lose set 
+    if (g_enemies_killed == ENEMY_COUNT)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Win!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+		g_game_is_running = false;
+	}
 
     g_time_accumulator = delta_time;
 }
@@ -373,7 +465,7 @@ void render()
     g_game_state.player->render(&g_shader_program);
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_game_state.platforms[i].render(&g_shader_program);
-    for (int i = 0; i < ENEMY_COUNT; i++)    g_game_state.enemies[i].render(&g_shader_program);
+    for (int i = 0; i < ENEMY_COUNT; i++)    if (g_game_state.enemies[i].get_is_active()) { g_game_state.enemies[i].render(&g_shader_program); }
 
     SDL_GL_SwapWindow(g_display_window);
 }
@@ -398,6 +490,7 @@ int main(int argc, char* argv[])
         render();
     }
 
-    shutdown();
+    while (1);
+    //shutdown();
     return 0;
 }

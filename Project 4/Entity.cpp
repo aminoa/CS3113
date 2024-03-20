@@ -155,6 +155,11 @@ void Entity::update(float delta_time, Entity* player, Entity* collidable_entitie
     m_collided_left = false;
     m_collided_right = false;
 
+    m_player_collided_bottom = false;
+    m_player_collided_top = false;
+    m_player_collided_left = false;
+    m_player_collided_right = false;
+
     if (m_entity_type == ENEMY) ai_activate(player);
 
     // ––––– ANIMATION ––––– //
@@ -210,19 +215,22 @@ void const Entity::check_collision_y(Entity* collidable_entities, Entity* player
     {
         Entity* collidable_entity = &collidable_entities[i];
         
-        if (check_collision(player))
+        if (check_collision(player) && this->get_entity_type() != PLAYER)
         {
 			float y_distance = fabs(m_position.y - player->get_position().y);
 			float y_overlap = fabs(y_distance - (m_height / 2.0f) - (player->get_height() / 2.0f));
-            if (m_velocity.y > 0) {
+
+            if (player->get_velocity().y > 0) {
 				//m_position.y -= y_overlap;
 				//m_velocity.y = 0;
-				m_player_collided_top = true;
+                // player colision above the enemy, aka enemy should die
+				m_player_collided_bottom = true;
 			}
-            else if (m_velocity.y < 0) {
+            else if (player->get_velocity().y < 0) {
 				//m_position.y += y_overlap;
 				//m_velocity.y = 0;
-				m_player_collided_bottom = true;
+                // player colision below the enemy, aka player should die
+				m_player_collided_top = true;
 			}
         }
 
@@ -255,13 +263,9 @@ void const Entity::check_collision_x(Entity* collidable_entities, Entity* player
             float x_distance = fabs(m_position.x - player->get_position().x);
 			float x_overlap = fabs(x_distance - (m_width / 2.0f) - (player->get_width() / 2.0f));
             if (m_velocity.x > 0) {
-				m_position.x -= x_overlap;
-				m_velocity.x = 0;
 				m_player_collided_right = true;
 			}
             else if (m_velocity.x < 0) {
-				m_position.x += x_overlap;
-				m_velocity.x = 0;
 				m_player_collided_left = true;
 			}
         }

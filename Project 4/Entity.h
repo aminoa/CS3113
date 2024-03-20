@@ -32,7 +32,6 @@ private:
     float m_width = 1;
     float m_height = 1;
 
-
 public:
     // ————— STATIC VARIABLES ————— //
     static const int SECONDS_PER_FRAME = 4;
@@ -74,6 +73,7 @@ public:
     bool m_player_collided_right = false;
 
     int m_patrol_direction = 1;
+    int m_game_end = 0;
 
     GLuint    m_texture_id;
 
@@ -115,6 +115,7 @@ public:
     float      const get_speed()          const { return m_speed;           };
     int        const get_width()          const { return m_width;           };
     int        const get_height()         const { return m_height;          };
+    bool       const get_is_active()      const { return m_is_active;       };
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type)  { m_entity_type = new_entity_type;      };
@@ -127,5 +128,6 @@ public:
     void const set_jumping_power(float new_jumping_power)   { m_jumping_power = new_jumping_power;  };
     void const set_acceleration(glm::vec3 new_acceleration) { m_acceleration = new_acceleration;    };
     void const set_width(float new_width)                   { m_width = new_width;                  };
-    void const set_height(float new_height)                 { m_height = new_height;                };
+    void const set_height(float new_height)                 { m_height = new_height;                }; 
+    void const set_is_active(bool new_is_active)            { m_is_active = new_is_active;          };
 };
