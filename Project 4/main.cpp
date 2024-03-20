@@ -17,6 +17,7 @@
 #define ENEMY_COUNT 3
 #define GAME_WIN 1
 #define GAME_LOSE 2
+#define GAME_LOSE_FLOAT 3
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -446,7 +447,18 @@ void update()
 			g_game_state.player->m_game_end = GAME_LOSE;
 			g_game_is_running = false;
         }
+        
+        // EXTRA CREDIT: floater enemy can instant kill you if they go above the screen
+        if (g_game_state.enemies[1].get_position().y > 4)
+        {
+            std::cout << "Death via enlightenment\n";
+            g_game_state.player->m_game_end = GAME_LOSE_FLOAT;
+			g_game_is_running = false;
+        }
+
 	}
+
+
 
     // check if the player has game win or game lose set 
     if (g_enemies_killed == ENEMY_COUNT)
@@ -476,6 +488,11 @@ void render()
     {
         draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
     }
+    else if (g_game_state.player->m_game_end == GAME_LOSE_FLOAT)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+		draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "Tux ascended...", 0.5f, 0.1f, glm::vec3(-4.5f, -1.0f, 0.0f));
+	}
 
 
     SDL_GL_SwapWindow(g_display_window);
