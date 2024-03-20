@@ -437,13 +437,13 @@ void update()
         else if (g_game_state.enemies[i].m_player_collided_bottom)
         {
             std::cout << "Enemy is on top of Player\n";
-			draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You oijodfjlka;jds;lkfjal;sdjfl;kjasdl;kfj;Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+			g_game_state.player->m_game_end = GAME_LOSE;
 			g_game_is_running = false;
 		}
         else if (g_game_state.enemies[i].m_player_collided_left || g_game_state.enemies[i].m_player_collided_right)
         {
             std::cout << "Enemy bumps into the player\n";
-			draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+			g_game_state.player->m_game_end = GAME_LOSE;
 			g_game_is_running = false;
         }
 	}
@@ -451,7 +451,7 @@ void update()
     // check if the player has game win or game lose set 
     if (g_enemies_killed == ENEMY_COUNT)
     {
-        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Win!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+        g_game_state.player->m_game_end = GAME_WIN;
 		g_game_is_running = false;
 	}
 
@@ -466,6 +466,17 @@ void render()
 
     for (int i = 0; i < PLATFORM_COUNT; i++) g_game_state.platforms[i].render(&g_shader_program);
     for (int i = 0; i < ENEMY_COUNT; i++)    if (g_game_state.enemies[i].get_is_active()) { g_game_state.enemies[i].render(&g_shader_program); }
+    
+    // render text
+    if (g_game_state.player->m_game_end == GAME_WIN)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Win!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+    }
+    else if (g_game_state.player->m_game_end == GAME_LOSE)
+    {
+        draw_text(&g_shader_program, g_game_state.resultText->m_texture_id, "You Lose!", 0.5f, 0.1f, glm::vec3(0.0f, 0.0f, 0.0f));
+    }
+
 
     SDL_GL_SwapWindow(g_display_window);
 }
