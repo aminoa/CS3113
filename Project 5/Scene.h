@@ -18,7 +18,7 @@
 
 struct GameState
 {
-    Map    *map;
+    Map *map;
     Entity *player;
     Entity *enemies;
     

@@ -1,3 +1,13 @@
+/**
+* Author: Aneesh Maganti
+* Assignment: Platformer
+* Date due: 2024-04-13, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define GL_SILENCE_DEPRECATION
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
@@ -22,9 +32,13 @@
 #include "Map.h"
 #include "Utility.h"
 #include "Scene.h"
+#include "Effects.h"
+
+// Levels
+#include "LevelStart.h"
 #include "LevelA.h"
 #include "LevelB.h"
-#include "Effects.h"
+
 
 // ––––– CONSTANTS ––––– //
 const int WINDOW_WIDTH  = 640,
@@ -45,14 +59,14 @@ const char V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 
-
 // ––––– GLOBAL VARIABLES ––––– //
 Scene  *g_current_scene;
 LevelA *g_levelA;
 LevelB *g_levelB;
+LevelStart *g_levelStart;
 
 Effects *g_effects;
-Scene   *g_levels[2];
+Scene   *g_levels[3];
 
 SDL_Window* g_display_window;
 bool g_game_is_running = true;
@@ -105,11 +119,13 @@ void initialise()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    g_levelStart = new LevelStart();
     g_levelA = new LevelA();
     g_levelB = new LevelB();
     
-    g_levels[0] = g_levelA;
-    g_levels[1] = g_levelB;
+    g_levels[0] = g_levelStart;
+    g_levels[1] = g_levelA;
+    g_levels[2] = g_levelB;
     
     // Start at level A
     switch_to_scene(g_levels[0]);
@@ -236,6 +252,7 @@ void shutdown()
     
     delete g_levelA;
     delete g_levelB;
+    delete g_levelStart;
     delete g_effects;
 }
 
