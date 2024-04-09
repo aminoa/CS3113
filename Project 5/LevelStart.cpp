@@ -6,15 +6,17 @@
 
 unsigned int LEVELSTART_DATA[] =
 {
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-    3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 };
+
+const char FONT_FILEPATH[] = "assets/font1.png";
 
 LevelStart::~LevelStart()
 {
@@ -24,17 +26,16 @@ LevelStart::~LevelStart()
 void LevelStart::initialise()
 {
 	m_state.next_scene_id = -1;
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
+    GLuint map_texture_id = Utility::load_texture("assets/black.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELSTART_DATA, map_texture_id, 1.0f, 4, 1);
 
-     // Existing
+     // Can't remove this code atm
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
     m_state.player->set_position(glm::vec3(5.0f, 0.0f, 0.0f));
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    m_state.player->m_texture_id = Utility::load_texture("assets/george_0.png");
 
     // Walking
     m_state.player->m_walking[m_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
@@ -54,25 +55,15 @@ void LevelStart::initialise()
     // Jumping
     m_state.player->m_jumping_power = 5.0f;
 
-    /**
-     Enemies' stuff */
-    GLuint enemy_texture_id = Utility::load_texture("assets/soph.png");
-
-    m_state.enemies = new Entity[ENEMY_COUNT];
-    m_state.enemies[0].set_entity_type(ENEMY);
-    m_state.enemies[0].set_ai_type(GUARD);
-    m_state.enemies[0].set_ai_state(IDLE);
-    m_state.enemies[0].m_texture_id = enemy_texture_id;
-    m_state.enemies[0].set_position(glm::vec3(8.0f, 0.0f, 0.0f));
-    m_state.enemies[0].set_movement(glm::vec3(0.0f));
-    m_state.enemies[0].m_speed = 1.0f;
-    m_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    // Text
+    m_state.text = new Entity();
+    m_state.text->m_texture_id = Utility::load_texture(FONT_FILEPATH);
+    m_state.text->set_position(glm::vec3(0.0f, 1.0f, 0.0f));
 
     // BGM and SFX
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 	m_state.bgm = Mix_LoadMUS("assets/title_screen.mp3");
 	Mix_PlayMusic(m_state.bgm, -1);
-	//Mix_VolumeMusic(0.0f);
 
 }
 
@@ -88,5 +79,7 @@ void LevelStart::update(float delta_time)
 
 void LevelStart::render(ShaderProgram* program)
 {
+    Utility::draw_text(program, m_state.text->m_texture_id, "Press Enter", 0.5f, 0.1f, glm::vec3(2.0f, -1.0f, 0.0f));
+    Utility::draw_text(program, m_state.text->m_texture_id, "to Start...", 0.5f, 0.1f, glm::vec3(2.0f, -2.0f, 0.0f));
 	m_state.map->render(program);
 }

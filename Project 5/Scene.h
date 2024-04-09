@@ -21,10 +21,11 @@ struct GameState
     Map *map;
     Entity *player;
     Entity *enemies;
+    Entity* text;
     
     Mix_Music *bgm;
     Mix_Chunk *jump_sfx;
-    
+
     int next_scene_id;
 };
 
