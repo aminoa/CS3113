@@ -36,18 +36,18 @@
 
 // Levels
 #include "LevelStart.h"
-#include "LevelA.h"
-#include "LevelB.h"
+#include "LevelOne.h"
+#include "LevelTwo.h"
 
 
 // ––––– CONSTANTS ––––– //
 const int WINDOW_WIDTH  = 640,
           WINDOW_HEIGHT = 480;
 
-const float BG_RED     = 0.1922f,
-            BG_BLUE    = 0.549f,
-            BG_GREEN   = 0.9059f,
-            BG_OPACITY = 1.0f;
+const float BG_RED     = 0.0f,
+            BG_BLUE    = 0.0f,
+            BG_GREEN   = 1.0f,
+            BG_OPACITY = 0.0f;
 
 const int VIEWPORT_X = 0,
           VIEWPORT_Y = 0,
@@ -61,8 +61,8 @@ const float MILLISECONDS_IN_SECOND = 1000.0;
 
 // ––––– GLOBAL VARIABLES ––––– //
 Scene  *g_current_scene;
-LevelA *g_levelA;
-LevelB *g_levelB;
+LevelOne *g_levelA;
+LevelTwo *g_levelB;
 LevelStart *g_levelStart;
 
 Effects *g_effects;
@@ -120,8 +120,8 @@ void initialise()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     g_levelStart = new LevelStart();
-    g_levelA = new LevelA();
-    g_levelB = new LevelB();
+    g_levelA = new LevelOne();
+    g_levelB = new LevelTwo();
     
     g_levels[0] = g_levelStart;
     g_levels[1] = g_levelA;
@@ -131,7 +131,8 @@ void initialise()
     switch_to_scene(g_levels[0]);
     
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
-    g_effects->start(SHRINK, 2.0f);
+    // Special effect added
+    g_effects->start(FADEIN, 0.25f);
 }
 
 void process_input()

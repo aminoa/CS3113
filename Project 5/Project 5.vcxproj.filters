@@ -30,10 +30,10 @@
     <ClCompile Include="helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LevelA.cpp">
+    <ClCompile Include="LevelOne.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LevelB.cpp">
+    <ClCompile Include="LevelTwo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Map.cpp">
@@ -62,10 +62,10 @@
     <ClInclude Include="Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LevelA.h">
+    <ClInclude Include="LevelOne.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LevelB.h">
+    <ClInclude Include="LevelTwo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Map.h">

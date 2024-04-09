@@ -1,10 +1,10 @@
 #include "Scene.h"
 
-class LevelA : public Scene {
+class LevelOne : public Scene {
 public:
     int ENEMY_COUNT = 1;
     
-    ~LevelA();
+    ~LevelOne();
     
     void initialise() override;
     void update(float delta_time) override;

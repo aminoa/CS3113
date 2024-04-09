@@ -1,22 +1,22 @@
-#include "LevelA.h"
+#include "LevelTwo.h"
 #include "Utility.h"
 
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-unsigned int LEVELA_DATA[] =
+unsigned int LEVELTWO_DATA[] =
 {
     3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-    3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2,
-    3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2,
+    3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2,
+    3, 1, 1, 1, 1, 1, 1, 0, 1, 2, 2, 2, 2, 2,
+    3, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2
 };
 
-LevelA::~LevelA()
+LevelTwo::~LevelTwo()
 {
     delete [] m_state.enemies;
     delete    m_state.player;
@@ -25,12 +25,12 @@ LevelA::~LevelA()
     Mix_FreeMusic(m_state.bgm);
 }
 
-void LevelA::initialise()
+void LevelTwo::initialise()
 {
     m_state.next_scene_id = -1;
     
     GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
-    m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELA_DATA, map_texture_id, 1.0f, 4, 1);
+    m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELTWO_DATA, map_texture_id, 1.0f, 4, 1);
     
     // Code from main.cpp's initialise()
     /**
@@ -77,27 +77,21 @@ void LevelA::initialise()
     m_state.enemies[0].m_speed = 1.0f;
     m_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     
-    
     /**
      BGM and SFX
      */
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-    
-    m_state.bgm = Mix_LoadMUS("assets/dooblydoo.mp3");
+    m_state.bgm = Mix_LoadMUS("assets/firsttest.wav");
     Mix_PlayMusic(m_state.bgm, -1);
-    Mix_VolumeMusic(0.0f);
-    
-    m_state.jump_sfx = Mix_LoadWAV("assets/bounce.wav");
+    m_state.jump_sfx = Mix_LoadWAV("assets/jump.wav");
 }
 
-void LevelA::update(float delta_time)
+void LevelTwo::update(float delta_time)
 {
     m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
-    
-    if (m_state.player->get_position().y < -10.0f) m_state.next_scene_id = 1;
 }
 
-void LevelA::render(ShaderProgram *program)
+void LevelTwo::render(ShaderProgram *program)
 {
     m_state.map->render(program);
     m_state.player->render(program);
