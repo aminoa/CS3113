@@ -38,7 +38,7 @@
 #include "LevelStart.h"
 #include "LevelOne.h"
 #include "LevelTwo.h"
-
+#include "LevelThree.h"
 
 // ––––– CONSTANTS ––––– //
 const int WINDOW_WIDTH  = 640,
@@ -61,12 +61,13 @@ const float MILLISECONDS_IN_SECOND = 1000.0;
 
 // ––––– GLOBAL VARIABLES ––––– //
 Scene  *g_current_scene;
-LevelOne *g_levelA;
-LevelTwo *g_levelB;
-LevelStart *g_levelStart;
+LevelOne *g_levelOne;
+LevelTwo *g_levelTwo;
+LevelThree* g_levelThree;
+LevelStart* g_levelStart;
 
 Effects *g_effects;
-Scene   *g_levels[3];
+Scene   *g_levels[4];
 
 SDL_Window* g_display_window;
 bool g_game_is_running = true;
@@ -120,14 +121,16 @@ void initialise()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     g_levelStart = new LevelStart();
-    g_levelA = new LevelOne();
-    g_levelB = new LevelTwo();
+    g_levelOne = new LevelOne();
+    g_levelTwo = new LevelTwo();
+    g_levelThree = new LevelThree();
     
     g_levels[0] = g_levelStart;
-    g_levels[1] = g_levelA;
-    g_levels[2] = g_levelB;
+    g_levels[1] = g_levelOne;
+    g_levels[2] = g_levelTwo;
+    g_levels[3] = g_levelThree;
     
-    // Start at level A
+    // Start at Level One
     switch_to_scene(g_levels[0]);
     
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
@@ -212,7 +215,7 @@ void update()
         g_current_scene->update(FIXED_TIMESTEP);
         g_effects->update(FIXED_TIMESTEP);
         
-        if (g_is_colliding_bottom == false && g_current_scene->m_state.player->m_collided_bottom) g_effects->start(SHAKE, 1.0f);
+        //if (g_is_colliding_bottom == false && g_current_scene->m_state.player->m_collided_bottom) g_effects->start(SHAKE, 1.0f);
         
         g_is_colliding_bottom = g_current_scene->m_state.player->m_collided_bottom;
         
@@ -230,7 +233,7 @@ void update()
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
     }
     
-    if (g_current_scene == g_levelA && g_current_scene->m_state.player->get_position().y < -10.0f) switch_to_scene(g_levelB);
+    if (g_current_scene == g_levelOne && g_current_scene->m_state.player->get_position().y < -10.0f) switch_to_scene(g_levelTwo);
     
     g_view_matrix = glm::translate(g_view_matrix, g_effects->m_view_offset);
 }
@@ -251,8 +254,9 @@ void shutdown()
 {    
     SDL_Quit();
     
-    delete g_levelA;
-    delete g_levelB;
+    delete g_levelOne;
+    delete g_levelTwo;
+    delete g_levelThree;
     delete g_levelStart;
     delete g_effects;
 }

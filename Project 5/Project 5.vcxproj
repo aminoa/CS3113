@@ -132,6 +132,7 @@
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="helper.cpp" />
     <ClCompile Include="LevelOne.cpp" />
+    <ClCompile Include="LevelThree.cpp" />
     <ClCompile Include="LevelTwo.cpp" />
     <ClCompile Include="LevelStart.cpp" />
     <ClCompile Include="main.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="Effects.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="LevelOne.h" />
+    <ClInclude Include="LevelThree.h" />
     <ClInclude Include="LevelTwo.h" />
     <ClInclude Include="LevelStart.h" />
     <ClInclude Include="Map.h" />

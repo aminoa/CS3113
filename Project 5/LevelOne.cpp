@@ -19,7 +19,7 @@ unsigned int LEVELONE_DATA[] =
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    48, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     48, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     48, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
@@ -45,7 +45,7 @@ void LevelOne::initialise()
     // Existing
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
-    m_state.player->set_position(glm::vec3(5.0f, 0.0f, 0.0f));
+    m_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
@@ -70,7 +70,7 @@ void LevelOne::initialise()
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
     
     // Jumping
-    m_state.player->m_jumping_power = 5.0f;
+    m_state.player->m_jumping_power = 8.0f;
     
     GLuint enemy_texture_id = Utility::load_texture("assets/sonic.png");
     
@@ -88,6 +88,7 @@ void LevelOne::initialise()
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
     m_state.bgm = Mix_LoadMUS("assets/firsttest.wav");
     Mix_PlayMusic(m_state.bgm, -1);
+    Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
     m_state.jump_sfx = Mix_LoadWAV("assets/jump.wav");
 }
 
