@@ -9,8 +9,6 @@ BG_BLUE = 0.4f,
 BG_GREEN = 1.0f,
 BG_OPACITY = 0.0f;
 
-
-
 // "Taekshi" AKA Leek - credit to artists of the Kagame Oni series (https://aooni.fandom.com/bjn/wiki/Leek)
 // Credit to https://kenney.nl/assets/tiny-town for the Tilemap 
 // Credit to me for the music
@@ -44,11 +42,7 @@ void LevelOne::initialise()
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELONE_DATA, map_texture_id, 1.0f, 12, 11);
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
     
-    // Code from main.cpp's initialise()
-    /**
-     George's Stuff
-     */
-    // Existingleset
+    // Existing
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
     m_state.player->set_position(glm::vec3(5.0f, 0.0f, 0.0f));
@@ -78,8 +72,7 @@ void LevelOne::initialise()
     // Jumping
     m_state.player->m_jumping_power = 5.0f;
     
-    // Can't get rid of this code either...
-    GLuint enemy_texture_id = Utility::load_texture("assets/taekshi.png");
+    GLuint enemy_texture_id = Utility::load_texture("assets/sonic.png");
     
     m_state.enemies = new Entity[ENEMY_COUNT];
     m_state.enemies[0].set_entity_type(ENEMY);
@@ -91,9 +84,7 @@ void LevelOne::initialise()
     m_state.enemies[0].m_speed = 1.0f;
     m_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
     
-    /**
-     BGM and SFX
-     */
+    /** BGM and SFX */
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
     m_state.bgm = Mix_LoadMUS("assets/firsttest.wav");
     Mix_PlayMusic(m_state.bgm, -1);
@@ -103,6 +94,7 @@ void LevelOne::initialise()
 void LevelOne::update(float delta_time)
 {
     m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
+    for (int i = 0; i < ENEMY_COUNT; i++) m_state.enemies[i].update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
     
     if (m_state.player->get_position().y < -10.0f) m_state.next_scene_id = 1;
 }
@@ -111,4 +103,5 @@ void LevelOne::render(ShaderProgram *program)
 {
     m_state.map->render(program);
     m_state.player->render(program);
+    m_state.enemies->render(program);
 }

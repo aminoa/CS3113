@@ -29,7 +29,7 @@ void LevelTwo::initialise()
 {
     m_state.next_scene_id = -1;
     
-    GLuint map_texture_id = Utility::load_texture("assets/tileset.png");
+    GLuint map_texture_id = Utility::load_texture("assets/tilemap.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELTWO_DATA, map_texture_id, 1.0f, 4, 1);
     
     // Code from main.cpp's initialise()
@@ -43,13 +43,13 @@ void LevelTwo::initialise()
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
-    m_state.player->m_texture_id = Utility::load_texture("assets/george_0.png");
-    
+    m_state.player->m_texture_id = Utility::load_texture("assets/taekshi.png");
+
     // Walking
-    m_state.player->m_walking[m_state.player->LEFT]  = new int[4] { 1, 5, 9,  13 };
-    m_state.player->m_walking[m_state.player->RIGHT] = new int[4] { 3, 7, 11, 15 };
-    m_state.player->m_walking[m_state.player->UP]    = new int[4] { 2, 6, 10, 14 };
-    m_state.player->m_walking[m_state.player->DOWN]  = new int[4] { 0, 4, 8,  12 };
+    m_state.player->m_walking[m_state.player->LEFT] = new int[4] { 4, 5, 6, 7 };
+    m_state.player->m_walking[m_state.player->RIGHT] = new int[4] { 8, 9, 10, 11 };
+    m_state.player->m_walking[m_state.player->UP] = new int[4] { 12, 13, 14, 15 };
+    m_state.player->m_walking[m_state.player->DOWN] = new int[4] { 0, 1, 2, 3 };
 
     m_state.player->m_animation_indices = m_state.player->m_walking[m_state.player->RIGHT];  // start George looking left
     m_state.player->m_animation_frames = 4;
