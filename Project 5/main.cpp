@@ -181,17 +181,17 @@ void process_input()
                             Mix_PlayChannel(-1, g_current_scene->m_state.jump_sfx, 0);
                         }
                         break;
-                        
+
                     default:
                         break;
                 }
-                
+
             default:
                 break;
         }
     }
-    
-    const Uint8 *key_state = SDL_GetKeyboardState(NULL);
+
+    const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
     if (key_state[SDL_SCANCODE_LEFT])
     {
@@ -203,7 +203,7 @@ void process_input()
         g_current_scene->m_state.player->m_movement.x = 1.0f;
         g_current_scene->m_state.player->m_animation_indices = g_current_scene->m_state.player->m_walking[g_current_scene->m_state.player->RIGHT];
     }
-    
+
     if (glm::length(g_current_scene->m_state.player->m_movement) > 1.0f)
     {
         g_current_scene->m_state.player->m_movement = glm::normalize(g_current_scene->m_state.player->m_movement);
@@ -215,52 +215,50 @@ void update()
     float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
-    
+
     delta_time += g_accumulator;
-    
+
     if (delta_time < FIXED_TIMESTEP)
     {
         g_accumulator = delta_time;
         return;
     }
 
-    if (g_lives == 0)
-    {
-        return;
-    }
-    
+    if (g_lives == 0 || g_current_scene->level_number == -1) { return; }
+
     while (delta_time >= FIXED_TIMESTEP) {
         g_current_scene->update(FIXED_TIMESTEP);
         g_effects->update(FIXED_TIMESTEP);
-        
+
         //if (g_is_colliding_bottom == false && g_current_scene->m_state.player->m_collided_bottom) g_effects->start(SHAKE, 1.0f);
-		//check if the player is colliding with an enemy
+        //check if the player is colliding with an enemy
 
         for (int i = 0; i < g_current_scene->m_number_of_enemies; i++)
         {
             if (g_current_scene->m_state.player->check_collision(&g_current_scene->m_state.enemies[i]))
             {
-			   //also need to decrease lives by 1; if lives == 0, then game over
-				g_current_scene->m_state.player->set_position(g_current_scene->m_player_start_position);
+                //also need to decrease lives by 1; if lives == 0, then game over
+                g_current_scene->m_state.player->set_position(g_current_scene->m_player_start_position);
                 g_lives -= 1;
-			}
-		}
-        
+            }
+        }
+
         g_is_colliding_bottom = g_current_scene->m_state.player->m_collided_bottom;
         delta_time -= FIXED_TIMESTEP;
     }
-    
+
     g_accumulator = delta_time;
-    
+
     // Prevent the camera from showing anything outside of the "edge" of the level
     g_view_matrix = glm::mat4(1.0f);
-    
+
     if (g_current_scene->m_state.player->get_position().x > LEVEL1_LEFT_EDGE) {
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-g_current_scene->m_state.player->get_position().x, 3.75, 0));
-    } else {
+    }
+    else {
         g_view_matrix = glm::translate(g_view_matrix, glm::vec3(-5, 3.75, 0));
     }
-    
+
     if (g_current_scene == g_levelOne && g_current_scene->m_state.player->get_position().y < -10.0f) switch_to_scene(g_levelTwo);
     g_view_matrix = glm::translate(g_view_matrix, g_effects->m_view_offset);
 }
@@ -270,15 +268,19 @@ void render()
 
     g_shader_program.set_view_matrix(g_view_matrix);
     glClear(GL_COLOR_BUFFER_BIT);
- 
+
     glUseProgram(g_shader_program.get_program_id());
     g_current_scene->render(&g_shader_program);
     g_effects->render();
 
-    if (g_lives == 0) 
+    if (g_lives == 0)
     {
         Utility::draw_text(&g_shader_program, g_state_text->m_texture_id, "Rip in Peace...", 0.5f, -0.25f, glm::vec3(2.0f, -1.0f, 0.0f));
     }
+    else if (g_current_scene->level_number == -1)
+    {
+		Utility::draw_text(&g_shader_program, g_state_text->m_texture_id, "You Win!", 0.5f, -0.25f, glm::vec3(14.0f, -1.0f, 0.0f));
+	}
     
     SDL_GL_SwapWindow(g_display_window);
 }

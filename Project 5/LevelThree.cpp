@@ -7,14 +7,14 @@
 
 unsigned int LEVELTHREE_DATA[] =
 {
+    48, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
+    48, 0, 1, 0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0,
+    48, 1, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0,
     48, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0,
     48, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2
+    48, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0
 };
 
 LevelThree::~LevelThree()
@@ -90,10 +90,18 @@ void LevelThree::update(float delta_time)
 {
     m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
     for (int i = 0; i < ENEMY_COUNT; i++) m_state.enemies[i].update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
+
+    if (m_state.player->get_position().y < -10.0f)
+    {
+        level_number = -1;
+    }
+
 }
 
 void LevelThree::render(ShaderProgram* program)
 {
+    
+
     m_state.map->render(program);
     m_state.player->render(program);
     m_state.enemies->render(program);
