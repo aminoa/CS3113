@@ -37,15 +37,15 @@ LevelOne::~LevelOne()
 void LevelOne::initialise()
 {
     m_state.next_scene_id = -1;
+    m_number_of_enemies = ENEMY_COUNT;
     
     GLuint map_texture_id = Utility::load_texture("assets/tilemap.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELONE_DATA, map_texture_id, 1.0f, 12, 11);
     glClearColor(BG_RED, BG_BLUE, BG_GREEN, BG_OPACITY);
-    
     // Existing
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
-    m_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+    m_state.player->set_position(m_player_start_position);
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
@@ -102,6 +102,7 @@ void LevelOne::update(float delta_time)
 
 void LevelOne::render(ShaderProgram *program)
 {
+
     m_state.map->render(program);
     m_state.player->render(program);
     m_state.enemies->render(program);

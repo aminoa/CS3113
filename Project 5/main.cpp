@@ -40,6 +40,9 @@
 #include "LevelTwo.h"
 #include "LevelThree.h"
 
+const char FONT_FILEPATH[] = "assets/font1.png";
+
+
 // ––––– CONSTANTS ––––– //
 const int WINDOW_WIDTH  = 640,
           WINDOW_HEIGHT = 480;
@@ -65,6 +68,7 @@ LevelOne *g_levelOne;
 LevelTwo *g_levelTwo;
 LevelThree* g_levelThree;
 LevelStart* g_levelStart;
+int g_lives = 3;
 
 Effects *g_effects;
 Scene   *g_levels[4];
@@ -79,6 +83,10 @@ float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
 
 bool g_is_colliding_bottom = false;
+
+//text
+Entity* text_texture;
+Entity* g_state_text;
 
 // ––––– GENERAL FUNCTIONS ––––– //
 void switch_to_scene(Scene *scene)
@@ -136,6 +144,11 @@ void initialise()
     g_effects = new Effects(g_projection_matrix, g_view_matrix);
     // Special effect added
     g_effects->start(FADEIN, 0.25f);
+
+    //text
+	g_state_text = new Entity();
+	g_state_text->m_texture_id = Utility::load_texture(FONT_FILEPATH);
+	g_state_text->set_position(glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void process_input()
@@ -210,15 +223,30 @@ void update()
         g_accumulator = delta_time;
         return;
     }
+
+    if (g_lives == 0)
+    {
+        return;
+    }
     
     while (delta_time >= FIXED_TIMESTEP) {
         g_current_scene->update(FIXED_TIMESTEP);
         g_effects->update(FIXED_TIMESTEP);
         
         //if (g_is_colliding_bottom == false && g_current_scene->m_state.player->m_collided_bottom) g_effects->start(SHAKE, 1.0f);
+		//check if the player is colliding with an enemy
+
+        for (int i = 0; i < g_current_scene->m_number_of_enemies; i++)
+        {
+            if (g_current_scene->m_state.player->check_collision(&g_current_scene->m_state.enemies[i]))
+            {
+			   //also need to decrease lives by 1; if lives == 0, then game over
+				g_current_scene->m_state.player->set_position(g_current_scene->m_player_start_position);
+                g_lives -= 1;
+			}
+		}
         
         g_is_colliding_bottom = g_current_scene->m_state.player->m_collided_bottom;
-        
         delta_time -= FIXED_TIMESTEP;
     }
     
@@ -234,18 +262,23 @@ void update()
     }
     
     if (g_current_scene == g_levelOne && g_current_scene->m_state.player->get_position().y < -10.0f) switch_to_scene(g_levelTwo);
-    
     g_view_matrix = glm::translate(g_view_matrix, g_effects->m_view_offset);
 }
 
 void render()
 {
+
     g_shader_program.set_view_matrix(g_view_matrix);
     glClear(GL_COLOR_BUFFER_BIT);
  
     glUseProgram(g_shader_program.get_program_id());
     g_current_scene->render(&g_shader_program);
     g_effects->render();
+
+    if (g_lives == 0) 
+    {
+        Utility::draw_text(&g_shader_program, g_state_text->m_texture_id, "Rip in Peace...", 0.5f, -0.25f, glm::vec3(2.0f, -1.0f, 0.0f));
+    }
     
     SDL_GL_SwapWindow(g_display_window);
 }

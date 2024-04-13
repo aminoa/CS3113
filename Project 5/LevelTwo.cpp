@@ -31,6 +31,7 @@ void LevelTwo::initialise()
     
     GLuint map_texture_id = Utility::load_texture("assets/tilemap.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELTWO_DATA, map_texture_id, 1.0f, 12, 11);
+    m_number_of_enemies = ENEMY_COUNT;
     
     // Code from main.cpp's initialise()
     /**
@@ -39,7 +40,7 @@ void LevelTwo::initialise()
     // Existing
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
-    m_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+    m_state.player->set_position(m_player_start_position);
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));

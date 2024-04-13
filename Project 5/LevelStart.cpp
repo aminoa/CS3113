@@ -25,6 +25,8 @@ LevelStart::~LevelStart()
 
 void LevelStart::initialise()
 {
+    int level_number = 0;
+
 	m_state.next_scene_id = -1;
     GLuint map_texture_id = Utility::load_texture("assets/black.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELSTART_DATA, map_texture_id, 1.0f, 4, 1);
@@ -43,7 +45,7 @@ void LevelStart::initialise()
     m_state.player->m_walking[m_state.player->UP] = new int[4] { 2, 6, 10, 14 };
     m_state.player->m_walking[m_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
 
-    m_state.player->m_animation_indices = m_state.player->m_walking[m_state.player->RIGHT];  // start George looking left
+    m_state.player->m_animation_indices = m_state.player->m_walking[m_state.player->RIGHT];  // start left 
     m_state.player->m_animation_frames = 4;
     m_state.player->m_animation_index = 0;
     m_state.player->m_animation_time = 0.0f;

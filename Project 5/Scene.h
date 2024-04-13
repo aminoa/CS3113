@@ -31,8 +31,10 @@ struct GameState
 
 class Scene {
 public:
-    int m_number_of_enemies = 1;
-    
+    int m_number_of_enemies = 0;
+    glm::vec3 m_player_start_position = glm::vec3(2.0f, 0.0f, 0.0f);
+    int level_number = 1;
+
     GameState m_state;
     
     virtual void initialise() = 0;

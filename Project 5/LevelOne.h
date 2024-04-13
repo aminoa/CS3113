@@ -3,7 +3,7 @@
 class LevelOne : public Scene {
 public:
     int ENEMY_COUNT = 1;
-    
+
     ~LevelOne();
     
     void initialise() override;

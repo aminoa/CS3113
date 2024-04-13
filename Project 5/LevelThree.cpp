@@ -4,7 +4,6 @@
 #define LEVEL_WIDTH 14
 #define LEVEL_HEIGHT 8
 
-const char FONT_FILEPATH[] = "assets/font1.png";
 
 unsigned int LEVELTHREE_DATA[] =
 {
@@ -13,8 +12,8 @@ unsigned int LEVELTHREE_DATA[] =
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+    48, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+    48, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
     48, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2
 };
 
@@ -33,16 +32,16 @@ void LevelThree::initialise()
 
     GLuint map_texture_id = Utility::load_texture("assets/tilemap.png");
     m_state.map = new Map(LEVEL_WIDTH, LEVEL_HEIGHT, LEVELTHREE_DATA, map_texture_id, 1.0f, 12, 11);
+    m_number_of_enemies = ENEMY_COUNT;
 
     // Text
     m_state.text = new Entity();
-    m_state.text->m_texture_id = Utility::load_texture(FONT_FILEPATH);
     m_state.text->set_position(glm::vec3(0.0f, 1.0f, 0.0f));
 
      // Existing
     m_state.player = new Entity();
     m_state.player->set_entity_type(PLAYER);
-    m_state.player->set_position(glm::vec3(2.0f, 0.0f, 0.0f));
+    m_state.player->set_position(m_player_start_position);
     m_state.player->set_movement(glm::vec3(0.0f));
     m_state.player->m_speed = 2.5f;
     m_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
@@ -91,7 +90,6 @@ void LevelThree::update(float delta_time)
 {
     m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
     for (int i = 0; i < ENEMY_COUNT; i++) m_state.enemies[i].update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
-
 }
 
 void LevelThree::render(ShaderProgram* program)
