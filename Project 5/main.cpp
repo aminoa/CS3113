@@ -83,6 +83,8 @@ float g_previous_ticks = 0.0f;
 float g_accumulator = 0.0f;
 
 bool g_is_colliding_bottom = false;
+bool g_pause = false;
+float last_pause_time = 0;
 
 //text
 Entity* text_texture;
@@ -226,6 +228,22 @@ void update()
 
     if (g_lives == 0 || g_current_scene->level_number == -1) { return; }
 
+    const Uint8* key_state = SDL_GetKeyboardState(NULL);
+
+    // pausing mechanic
+    if (key_state[SDL_SCANCODE_P])
+    {
+        float current_time = (float) SDL_GetTicks();
+        if (current_time - last_pause_time >= 1000)
+        {
+            g_pause = !g_pause;
+            last_pause_time = current_time;
+        }
+    }
+
+    if (g_pause) { return; }
+
+
     while (delta_time >= FIXED_TIMESTEP) {
         g_current_scene->update(FIXED_TIMESTEP);
         g_effects->update(FIXED_TIMESTEP);
@@ -265,6 +283,7 @@ void update()
 
 void render()
 {
+    if (g_pause) { return; }
 
     g_shader_program.set_view_matrix(g_view_matrix);
     glClear(GL_COLOR_BUFFER_BIT);

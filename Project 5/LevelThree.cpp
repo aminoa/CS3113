@@ -91,10 +91,7 @@ void LevelThree::update(float delta_time)
     m_state.player->update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
     for (int i = 0; i < ENEMY_COUNT; i++) m_state.enemies[i].update(delta_time, m_state.player, m_state.enemies, ENEMY_COUNT, m_state.map);
 
-    if (m_state.player->get_position().y < -10.0f)
-    {
-        level_number = -1;
-    }
+    if (m_state.player->get_position().y < -10.0f) { level_number = -1; }
 
 }
 
